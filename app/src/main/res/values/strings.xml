@@ -6,6 +6,9 @@
 
     <string name="ip_label">My IP:</string>
     <string name="ip_placeholder">Detecting...</string>
+    <string name="ip_cli_lbl">Client IP:</string>
+    <string name="ip_cli_Placeholder">Not Connected</string>
+
     <string name="socket_title">Socket Communication Log</string>
     <string name="socket_placeholder">Awaiting remote connection...</string>
 

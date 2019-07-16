@@ -5,7 +5,6 @@ import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.os.PersistableBundle
 import android.text.method.ScrollingMovementMethod
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_fullscreen.*
@@ -28,7 +27,8 @@ val SERVERPORT = 1337
 var serverSocket = ServerSocket()
 var updateConversationHandler = Handler()
 var serverThread = Thread()
-var txtSocetLogg:TextView? = null
+var txtSocketLog:TextView? = null
+var txtClientIp:TextView? = null
 
 class FullscreenActivity : AppCompatActivity() {
 
@@ -40,8 +40,11 @@ class FullscreenActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.hide()
 
-        txtSocetLogg = findViewById<TextView>(R.id.txtSocketLogg)
-        txtSocetLogg!!.movementMethod = ScrollingMovementMethod()
+        txtSocketLog = findViewById<TextView>(R.id.txtSocketLogg)
+        txtSocketLog!!.movementMethod = ScrollingMovementMethod()
+
+        txtClientIp = findViewById<TextView>(R.id.txtCliIPPrint)
+
         serverThread = Thread(ServerThread())
         serverThread.start()
 
@@ -92,7 +95,7 @@ class FullscreenActivity : AppCompatActivity() {
             }
             while (!Thread.currentThread().isInterrupted) {
                 try {
-                    socket = serverSocket?.accept()
+                    socket = serverSocket.accept()
                     val commThread= CommunicationThread(socket as Socket)
                     Thread(commThread).start()
 
@@ -114,12 +117,15 @@ class FullscreenActivity : AppCompatActivity() {
         }
 
         override fun run() {
+            val adrStr = clientSocket.remoteSocketAddress.toString()
+            updateConversationHandler.post(updateStuff(adrStr))
+            updateConversationHandler.post(updateUIThread("Connected to: " + adrStr ))
             while (!Thread.currentThread().isInterrupted) {
                 try {
                     val read = input!!.readLine()
-                    updateConversationHandler?.post(updateUIThread(read))
+                    updateConversationHandler.post(updateUIThread(read))
                 } catch (e: IOException) {
-                    e.printStackTrace()
+                    //e.printStackTrace()
                 }
             }
         }
@@ -127,15 +133,17 @@ class FullscreenActivity : AppCompatActivity() {
         internal inner class updateUIThread(private val msg: String) : Runnable {
 
             override fun run() {
-                //text!!.setText(text!!.getText().toString() + "Client Says: " + msg + "\n")
-                //text?.setText("Client: "+ msg)
-                val oldText = txtSocetLogg!!.text.toString() + "\n" + msg
-                txtSocetLogg!!.text = oldText
-                txtSocetLogg!!.scrollTo(0, txtSocetLogg!!.bottom)
-
+                txtSocketLog!!.append("\n" + msg)
             }
         }
 
+    }
+
+    internal inner class updateStuff(private val msg: String) : Runnable {
+
+        override fun run() {
+            txtClientIp!!.text = msg
+        }
     }
 
 }
