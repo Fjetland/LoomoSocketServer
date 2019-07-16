@@ -9,6 +9,8 @@
     <string name="socket_title">Socket Communication Log</string>
     <string name="socket_placeholder">Awaiting remote connection...</string>
 
+    <string name="no_wifi">Turn on Wifi and restart</string>
+
 
 
 </resources>

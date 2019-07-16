@@ -13,7 +13,10 @@
             android:id="@+id/txtSocketLogg" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/txtSocketTitle"
-            android:scrollbars="vertical" android:textSize="12sp"/>
+            android:scrollbars="vertical" android:textSize="12sp" android:focusable="auto"
+            android:scrollbarStyle="insideOverlay"
+            android:verticalScrollbarPosition="right" android:scrollHorizontally="false"
+            android:scrollbarAlwaysDrawVerticalTrack="true"/>
     <TextView
             android:text="@string/socket_title"
             android:layout_width="wrap_content"
@@ -61,6 +64,6 @@
             android:id="@+id/txtIpPrint"
             app:layout_constraintEnd_toStartOf="@+id/divider" app:layout_constraintStart_toEndOf="@+id/txtIpLabel"
             android:layout_marginStart="8dp" android:layout_marginEnd="8dp"
-            app:layout_constraintBaseline_toBaselineOf="@+id/txtIpLabel" android:textSize="10sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/txtIpLabel" android:textSize="12sp"
             android:hint="@string/ip_placeholder" android:focusable="false" android:cursorVisible="false"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
