@@ -45,7 +45,11 @@ class MainActivity : AppCompatActivity() {
         socketThread = Thread(MySocket())
         socketThread.start()
 
+    }
 
+    override fun onResume() {
+        viewModel.updateMyIp()
+        super.onResume()
     }
 
 

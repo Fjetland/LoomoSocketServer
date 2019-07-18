@@ -22,7 +22,6 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateMyIp() {
         myIp.value = IpHelper.getDeviceIp(context)
-
     }
 
 }
