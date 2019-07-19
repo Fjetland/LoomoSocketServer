@@ -3,6 +3,7 @@ package eu.fjetland.loomosocketserver.connection
 import android.util.Log
 import eu.fjetland.loomosocketserver.LOG_TAG
 import eu.fjetland.loomosocketserver.SOCKET_PORT
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -52,13 +53,25 @@ class MySocket : Runnable {
             if (read == null) break
 
             Log.i(LOG_TAG,"Recived: $read")
-
+            deCodejsone(read)
             //Echo
-            output.write(read)
-            output.flush()
+            //output.write(read)
+            //output.flush()
         }
         Log.e(LOG_TAG, "Lost Connection to: $socket")
         return false
+    }
+
+    fun deCodejsone(data: String) {
+        val obj = JSONObject(data)
+        val valNames = obj.names()!!.toString()
+        Log.i(LOG_TAG,"Variable names: $valNames")
+        Log.i(LOG_TAG,"Re-encoded: $obj")
+
+        for (key in obj.keys()) {
+            Log.i(LOG_TAG,"$key has value: ${obj.get(key)}")
+        }
+
     }
 
 }
