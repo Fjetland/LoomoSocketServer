@@ -27,8 +27,35 @@ Description of the agreed upon communication protocol between sender and receive
   - If "*Next Byte*"== 1, then a **_Response ID_** is used
 3. Uint8 Confirmation ID in accordance with **The Response ID List**
 
+### NO ACTIONS OR REPONCES IMPLEMENTED IN CURRET BUILD
+
 ### Action Intentions
 List of action intentions and accepted JSON structures
 
 ### Response ID List
-One bit responses for
+One bit greetings/commands
+
+##### Basic responses and confirmations
+
+Number | Description
+-------|------------
+1 | Yes
+2 | No
+3 | Received
+4 | Re-send / Not received
+9 | Urgent message following
+
+##### Commands to Loomo [16,31]
+Number | Description
+-------|------------
+16 | Status
+17 | Stop
+
+
+
+##### Loomo responces [32,64]
+
+Number | Description
+-------|------------
+32 | All Okey
+33 | Error detected
