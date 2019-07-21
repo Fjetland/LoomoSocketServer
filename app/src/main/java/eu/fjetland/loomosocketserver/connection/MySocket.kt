@@ -1,21 +1,18 @@
 package eu.fjetland.loomosocketserver.connection
 
 import android.util.Log
+import eu.fjetland.loomosocketserver.ENCODING
 import eu.fjetland.loomosocketserver.LOG_TAG
 import eu.fjetland.loomosocketserver.SOCKET_PORT
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
+import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
 
 class MySocket : Runnable {
     private lateinit var _myThread:Thread
     private lateinit var serverSocket: ServerSocket
-    private  lateinit var input: BufferedReader
-    private  lateinit var output: BufferedWriter
+    private  lateinit var input: InputStream
+    private  lateinit var output: OutputStream
 
     override fun run() {
         Log.i(LOG_TAG, "Starting: MySocket Run")
@@ -24,14 +21,16 @@ class MySocket : Runnable {
         serverSocket = ServerSocket(SOCKET_PORT)
 
         while (!_myThread.isInterrupted) {
-            communicate(awaitClient() as Socket)
+            val socket = awaitClient()
+            biReadInitializer(socket as Socket)
+            //listenForMessages(socket as Socket)
+
             Log.i(LOG_TAG, "Trying to re-connect to Socket")
         }
 
-
     }
 
-    fun awaitClient():Socket? {
+    private fun awaitClient():Socket? {
         Log.i(LOG_TAG,"Pre-connect")
         var socket: Socket? = null
         var notConnected = true
@@ -44,34 +43,36 @@ class MySocket : Runnable {
         return socket
     }
 
-    fun communicate(socket: Socket) : Boolean {
-        input = BufferedReader(InputStreamReader(socket.getInputStream()))
-        output = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
+    private fun biReadInitializer(socket: Socket) : Boolean {
+        input = socket.getInputStream()
+        output = socket.getOutputStream()
+        Log.i(LOG_TAG,"Initialized bit Listener")
 
         while (!_myThread.isInterrupted) {
-            val read = input.readLine()
-            if (read == null) break
-
-            Log.i(LOG_TAG,"Recived: $read")
-            deCodejsone(read)
-            //Echo
-            //output.write(read)
-            //output.flush()
+            var newMessage = false
+            while (newMessage.not()){
+                val read = input.read()
+                if (read>=0){
+                    newMessage = true
+                    Log.i(LOG_TAG,"Reciving message of: ${read.toString()}bytes")
+                    readInitializer(read)
+                } else {
+                    Thread.sleep(10)
+                }
+            }
+            Log.i(LOG_TAG,"Recived Message")
         }
         Log.e(LOG_TAG, "Lost Connection to: $socket")
         return false
     }
 
-    fun deCodejsone(data: String) {
-        val obj = JSONObject(data)
-        val valNames = obj.names()!!.toString()
-        Log.i(LOG_TAG,"Variable names: $valNames")
-        Log.i(LOG_TAG,"Re-encoded: $obj")
-
-        for (key in obj.keys()) {
-            Log.i(LOG_TAG,"$key has value: ${obj.get(key)}")
-        }
-
+    private fun readInitializer(bytes: Int) {
+        val data = ByteArray(bytes)
+        input.read(data,0,bytes)
+        val string = data.toString(charset(ENCODING))
+        Log.i(LOG_TAG,"Decoded string: $string")
     }
+
+
 
 }
