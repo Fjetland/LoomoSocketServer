@@ -43,7 +43,8 @@ Number | Description
 2 | No
 3 | Received
 4 | Re-send / Not received
-9 | Urgent message following
+6 | Urgent message following
+10 | Disconnecting
 
 ##### Commands to Loomo [16,31]
 Number | Description

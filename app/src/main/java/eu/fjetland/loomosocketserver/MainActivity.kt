@@ -1,19 +1,19 @@
 package eu.fjetland.loomosocketserver
 
-import android.content.Context
-import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.MySocket
 import kotlinx.android.synthetic.main.activity_main.*
 
+var updateConversationHandler = Handler()
+lateinit var viewModel : DebugViewModel
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var viewModel : DebugViewModel
     lateinit var socketThread: Thread
     var isWifiOn = true
 
@@ -40,9 +40,11 @@ class MainActivity : AppCompatActivity() {
         viewModel.clientIp.observe(this, Observer {
             txtClientIpDisplay.text = it
         })
+        viewModel.readLog.observe(this, Observer {
+            txtSocketLogg.text = it
+        })
 
-
-        socketThread = Thread(MySocket())
+        socketThread = Thread(MySocket(this))
         socketThread.start()
 
     }

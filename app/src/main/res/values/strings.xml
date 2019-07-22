@@ -13,7 +13,7 @@
     <string name="socket_placeholder">Awaiting remote connection...</string>
 
     <string name="no_wifi">Turn on Wifi and restart</string>
-
+    <string name="lost_client_msg">Client Lost Connection</string>
 
 
 </resources>

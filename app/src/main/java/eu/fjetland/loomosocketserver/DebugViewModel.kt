@@ -24,4 +24,12 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         myIp.value = IpHelper.getDeviceIp(context)
     }
 
+    fun updateClientIp(string: String) {
+        clientIp.value = string
+    }
+
+    fun updateComLogText(string: String) {
+        readLog.value = readLog.value + "\n" +string
+    }
+
 }
