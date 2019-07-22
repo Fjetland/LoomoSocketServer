@@ -1,13 +1,16 @@
 package eu.fjetland.loomosocketserver
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.MySocket
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 var updateConversationHandler = Handler()
 lateinit var viewModel : DebugViewModel
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         socketThread = Thread(MySocket(this))
         socketThread.start()
+        Context.AUDIO_SERVICE
 
     }
 

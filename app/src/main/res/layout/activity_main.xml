@@ -6,23 +6,32 @@
         android:layout_height="match_parent"
         android:background="#0099cc"
         tools:context=".MainActivity">
-    <TextView
-            android:text="@string/socket_placeholder"
+
+    <ScrollView
             android:layout_width="280dp"
-            android:layout_height="0dp"
-            android:id="@+id/txtSocketLogg" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
+            android:layout_height="0dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/txtSocketTitle"
-            android:scrollbars="vertical" android:textSize="12sp" android:focusable="auto"
-            android:scrollbarStyle="insideOverlay"
-            android:verticalScrollbarPosition="right" android:scrollHorizontally="false"
-            android:scrollbarAlwaysDrawVerticalTrack="true" android:gravity="bottom"/>
+            android:id="@+id/scrollView2" android:verticalScrollbarPosition="right">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                      android:orientation="vertical">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/socket_placeholder"
+                    android:id="@+id/txtSocketLogg"
+                    android:textSize="12sp" android:focusable="auto"
+                    android:gravity="bottom"/>
+        </LinearLayout>
+
+    </ScrollView>
+
     <TextView
             android:text="@string/socket_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="8dp" android:id="@+id/txtSocketTitle"
-            app:layout_constraintStart_toStartOf="@+id/txtSocketLogg" android:fontFamily="sans-serif-condensed-medium"
+            app:layout_constraintStart_toStartOf="@+id/scrollView2" android:fontFamily="sans-serif-condensed-medium"
             android:textSize="10sp" android:textColor="@color/colorPrimary" tools:ignore="SmallSp"/>
     <View
             android:id="@+id/divider"
@@ -30,7 +39,7 @@
             android:layout_height="288dp"
             android:background="?android:attr/listDivider"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@+id/txtSocketLogg"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@+id/scrollView2"
             android:layout_marginEnd="8dp"/>
     <TextView
             android:text="@string/app_name"
@@ -88,4 +97,5 @@
             app:layout_constraintEnd_toStartOf="@+id/txtClientIpDisplay" android:layout_marginEnd="8dp"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp" android:textSize="12sp"
             android:fontFamily="sans-serif-condensed-medium"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

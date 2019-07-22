@@ -32,6 +32,45 @@ Description of the agreed upon communication protocol between sender and receive
 ### Action Intentions
 List of action intentions and accepted JSON structures
 
+#### Locomotion control
+###### Keyword: loc
+loc: Loomo velocity control
+
+Variable | Key | Description
+---|---|---
+act  | loc | Activate Locomotion Commands
+**_Variable_** | **_Range_** | **_Description_**
+v | 0-4 m/s? | [double] Desired velocity
+t | 0-0.5 /s? | [double] Desired CW turn rate
+
+###### Keyword: pos
+Variable | Key | Description
+---|---|---
+act  | loc | Activate Locomotion Commands
+**_Variable_** | **_Range_** | **_Description_**
+v | 0-4 m/s? | [double] Desired velocity
+t | 0-0.5 /s? | [double] Desired CW turn rate
+
+#### Speak
+Variable | Key | Description
+---|---|---
+act  | spk | Activate Locomotion Commands
+**_Variable_** | **_Range_** | **_Description_**
+l |  | Length of text
+p | 0.5-2 | [double] Pitch 1 is normal.
+q | 1 or 2| [int] Que mode - 1= now (default) 2 = add
+
+Followed by a string of the exact length **_l_**
+
+#### Volume
+Variable | Key | Description
+---|---|---
+act  | vol | Activate Locomotion Commands
+**_Variable_** | **_Range_** | **_Description_**
+v | 0-1 | (double) Volume
+
+Followed by a string of the exact length **_l_**
+
 ### Response ID List
 One bit greetings/commands
 
@@ -41,7 +80,7 @@ Number | Description
 -------|------------
 1 | Yes
 2 | No
-3 | Received
+3 | Ready for data
 4 | Re-send / Not received
 6 | Urgent message following
 10 | Disconnecting
@@ -54,9 +93,9 @@ Number | Description
 
 
 
-##### Loomo responces [32,64]
+##### Loomo responses [32,64]
 
 Number | Description
 -------|------------
-32 | All Okey
+32 | All Okay
 33 | Error detected

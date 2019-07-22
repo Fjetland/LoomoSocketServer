@@ -2,9 +2,11 @@ package eu.fjetland.loomosocketserver
 
 import android.app.Application
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import eu.fjetland.loomosocketserver.connection.IpHelper
+import kotlinx.android.synthetic.main.activity_main.*
 
 class DebugViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -29,7 +31,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun updateComLogText(string: String) {
-        readLog.value = readLog.value + "\n" +string
+        readLog.value = string + "\n" + readLog.value
     }
 
 }
