@@ -22,8 +22,6 @@ class MySocket(myContext: Context) : Runnable {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT)
         _myThread = Thread.currentThread()
         serverSocket = ServerSocket(SOCKET_PORT)
-
-
         // Main TCP communication Loop
         while (!_myThread.isInterrupted) {
 
@@ -31,15 +29,23 @@ class MySocket(myContext: Context) : Runnable {
             val socket = awaitClient()
             updateClientIp(socket!!.remoteSocketAddress.toString())
             updateSocketLog("Connected to: ${socket.remoteSocketAddress}")
-
             // Listen to client
-            bitReadInitializer(socket)
+            mainListenerLoop(socket)
 
             // Notify of lost connection
             updateClientIp(context.getString(R.string.lost_client_msg))
             updateSocketLog(context.getString(R.string.tcp_reconnect_message))
             Log.i(LOG_TAG, context.getString(R.string.tcp_reconnect_message))
         }
+        try {
+            serverSocket.close()
+        } catch (e: IOException) {
+            Log.e(LOG_TAG, "Close socket exeption: ",e)
+        }
+
+        updateConversationHandler.post { viewModel.fullStoppMessage() }
+        Log.e(LOG_TAG,"Shutting Down MySocket")
+        loomo.onDelete()
 
     }
 
@@ -53,72 +59,90 @@ class MySocket(myContext: Context) : Runnable {
         return socket
     }
 
-    private fun bitReadInitializer(socket: Socket) : Boolean {
+    private fun mainListenerLoop(socket: Socket) : Boolean {
         input = socket.getInputStream()
         output = socket.getOutputStream()
         Log.i(LOG_TAG,"Ready for incoming messages from $socket")
 
         while (!_myThread.isInterrupted and isConnected) {
-            var newMessage = false
-            while (newMessage.not()) {
                 val read = input.read()
                 when {
-                    read == 1 -> {
-                        newMessage = true
-                        Log.i(LOG_TAG, "Receiving a 1 bit message")
-                        readResponseID()
-                    }
-                    read>1 -> {
-                        newMessage = true
-                        Log.i(LOG_TAG,"Receiving message of: $read bytes")
-                        readInitializer(read)
-                    }
-                    read == -1 -> {
-                        disconnectResponse()
-                        Log.e(LOG_TAG, "Unexpected Client disconnect: $read from $socket")
-                    }
+                    read == 1 -> readResponseID()
+                    read>1 -> readActionIntent(read)
+                    read == -1 -> disconnectResponse()
                     else -> {
                         Log.i(LOG_TAG, "Unexpected initial read bit value: $read")
                         Thread.sleep(10)}
                 }
-            }
+            //}
         }
         return false
     }
 
     private fun readResponseID() {
+        Log.i(LOG_TAG, "Receiving a 1 bit message")
         when (val messageID = input.read()) {
-            ResponsID.DISCONNECT -> {
-                disconnectResponse()
-                Log.i(LOG_TAG, "Disconnect message received from client")
-            }
+            ResponsID.STOP -> loomo.mBase.stop()
+            ResponsID.DISCONNECT ->disconnectResponse()
+            ResponsID.STRING_NEXT -> readString()
+            ResponsID.RETURNTEST -> responseTester()
+            ResponsID.DATA_SURROUNDINGS_ID -> sendString2Client(loomo.returnSurroundings())
             else -> Log.e(LOG_TAG,"Unknown Response ID: $messageID")
         }
     }
-
-    private fun readInitializer(bytes: Int) {
-        val data = ByteArray(bytes)
-        input.read(data,0,bytes)
-        val string = data.toString(charset(ENCODING))
+    private fun readActionIntent(bytes: Int) {
+        Log.i(LOG_TAG,"Receiving Action intent with: $bytes bytes")
+        val string = readBytesToString(bytes)
         updateSocketLog(string)
-        //readAndLogJsonString(string)
-        decodeJSONandAct(string)
-        Log.i(LOG_TAG,"Decoded string: $string")
-    }
-
-    private fun decodeJSONandAct(string: String) {
-        val obj = JSONObject(string)
-        if (obj.has(ActionID.ACTION)) {
-            when (obj.getString(ActionID.ACTION)) {
-                ActionID.SPEAK -> actionSpeak(obj)
-                ActionID.VOLUME -> loomo.setVolume(obj.getDouble(ActionID.VOLUME_VALUE))
-                else -> {
-                    Log.w(LOG_TAG, "Unknown JSON Class")
-                }
+        val json = JSONObject(string)
+        if (json.has(ActionID.ACTION)) {
+            when (json.getString(ActionID.ACTION)) {
+                ActionID.VELOCITY -> loomo.setSpeeds(json)
+                ActionID.SPEAK -> actionSpeak(json)
+                ActionID.VOLUME -> loomo.setVolume(json.getDouble(ActionID.VOLUME_VALUE))
+                ActionID.HEAD -> loomo.headPosition(json)
+                else -> Log.w(LOG_TAG, "Unknown JSON Class")
             }
         } else {
             Log.e(LOG_TAG, "JSON Action(${ActionID.ACTION}) missing in: $string")
         }
+    }
+
+    private fun readString() {
+        val length = input.read()
+        val string = readBytesToString(length)
+        updateSocketLog("Received string: $string")
+    }
+
+    private fun readBytesToString(int: Int) : String{
+        val string = readBytes(int).toString(charset(ENCODING))
+        return string
+    }
+
+    private fun readBytes(int: Int) : ByteArray{
+        val bytes = ByteArray(int)
+        input.read(bytes,0,int)
+        return bytes
+    }
+
+    private fun responseTester(){
+        val string = "Hello" //loomo.returnSurroundings()
+        val bytes = string.toByteArray(charset(ENCODING))
+        respondToClient(bytes)
+
+        loomo.testFun()
+        Log.d(LOG_TAG,"Response tester finished")
+    }
+
+    private fun sendString2Client(string: String){
+        val bytes = string.toByteArray(charset(ENCODING))
+        respondToClient(bytes)
+    }
+
+    private fun respondToClient(byteArray: ByteArray) {
+        val length = byteArray.size
+        output.write(length)
+        output.write(byteArray)
     }
 
     private fun updateClientIp(string: String) {
@@ -134,15 +158,9 @@ class MySocket(myContext: Context) : Runnable {
         }
     }
 
-    private fun readLongText(length: Int) : String {
-        readyForData()
-        val bytes = ByteArray(length)
-        input.read(bytes,0,length)
-        val string = bytes.toString(charset(ENCODING))
-        return string
-    }
 
     private fun disconnectResponse(){
+        Log.e(LOG_TAG, "Unexpected Client disconnect: -1 from $serverSocket")
         isConnected = false
 
     }
@@ -151,7 +169,8 @@ class MySocket(myContext: Context) : Runnable {
         val length = obj.getInt(ActionID.SPEAK_LENGTH)
         val que = obj.getInt(ActionID.SPEAK_QUE)
         val pitch = obj.getDouble(ActionID.SPEAK_PITCH)
-        val message = readLongText(length)
+        readyForData()
+        val message = readBytesToString(length)
         loomo.speak(message,que,pitch)
     }
 
