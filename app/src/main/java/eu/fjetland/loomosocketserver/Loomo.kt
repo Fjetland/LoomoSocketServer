@@ -2,14 +2,25 @@ package eu.fjetland.loomosocketserver
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import org.json.JSONObject
 import android.util.Log
 import java.util.*
 import android.media.AudioManager
 import com.segway.robot.sdk.perception.sensor.Sensor
 import kotlin.Exception
 import com.segway.robot.sdk.base.bind.ServiceBinder
-import java.util.Arrays.asList
-import com.segway.robot.sdk.perception.sensor.SensorData
+import com.segway.robot.sdk.locomotion.head.Head
+import com.segway.robot.sdk.locomotion.sbv.Base
+import com.segway.robot.sdk.vision.Vision
+import eu.fjetland.loomosocketserver.connection.ActionID
+import eu.fjetland.loomosocketserver.connection.ResponsID
+import com.segway.robot.sdk.vision.stream.StreamInfo
+import android.graphics.Bitmap
+import com.segway.robot.sdk.vision.frame.Frame
+import com.segway.robot.sdk.vision.stream.StreamType
+import com.segway.robot.sdk.vision.stream.StreamType.DEPTH
+
+
 
 
 
@@ -17,16 +28,20 @@ import com.segway.robot.sdk.perception.sensor.SensorData
 
 
 class Loomo(applicationContext: Context) {
-    var textOK = false
-    var context = applicationContext
-    val tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+    private var textOK = false
+    private var context = applicationContext
+    private val tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
         if (status != TextToSpeech.ERROR){
             //if there is no error then set language
             textOK = true }
     })
-    var mAudio= context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-     var mSensor = Sensor.getInstance()
+    private var mAudio= context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var mSensor = Sensor.getInstance()
+    private var mHead = Head.getInstance()
+    var mBase = Base.getInstance()
+//    private var mVision = Vision.getInstance()
+//
+//    private val mBitmap = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888)
 
 
     init {
@@ -37,15 +52,52 @@ class Loomo(applicationContext: Context) {
         mSensor.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 Log.d(LOG_TAG, "sensor onBind")
-
             }
             override fun onUnbind(reason: String) {
-
             }
         })
 
+        mHead.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(LOG_TAG, "Head onBind")
+            }
+            override fun onUnbind(reason: String?) {
+            }
+        })
+
+        mBase.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(LOG_TAG, "Base onBind")
+            }
+            override fun onUnbind(reason: String?) {
+            }
+        })
+//        mVision.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
+//            override fun onBind() {
+//                Log.d(LOG_TAG, "Vision onBind")
+//            }
+//            override fun onUnbind(reason: String?) {
+//            }
+//        })
+
+      }
+
+    fun onDelete(){
+        try {
+            tts.shutdown()
+        } catch (e: Exception) {
+            Log.e(LOG_TAG,"Shutdown TTS: ", e)
+        }
 
     }
+
+//    fun onLater(){
+//        mVision.startListenFrame(StreamType.DEPTH, object : Vision.FrameListener {
+//            override fun onNewFrame(streamType: Int, frame: Frame) {
+//                mBitmap.copyPixelsFromBuffer(frame.getByteBuffer())
+//            }
+//        })
+//    }
 
     fun speak(string: String, que: Int, pitch: Double) {
         try {
@@ -78,16 +130,45 @@ class Loomo(applicationContext: Context) {
         }
     }
 
-    fun infraredData() : IntArray {
-        val mInfraredData = mSensor.querySensorData(Arrays.asList(Sensor.INFRARED_BODY))[0]
-        val mInfraredDistanceLeft = mInfraredData.intData[0]
-        val mInfraredDistanceRight = mInfraredData.intData[1]
-        val values = intArrayOf(mInfraredDistanceLeft,mInfraredDistanceRight)
-        //values[0] = mInfraredDistanceLeft.toDouble()
-        //values[2] = mInfraredDistanceRight.toDouble()
+    fun headPosition(json :JSONObject) {
+        if (json.getString(ActionID.ACTION).equals(ActionID.HEAD)) {
+            val pitch = json.getDouble(ActionID.HEAD_PITCH).toFloat()
+            val yaw = json.getDouble(ActionID.HEAD_YAW).toFloat()
+            mHead.mode = Head.MODE_SMOOTH_TACKING
+            mHead.setWorldPitch(pitch)
+            mHead.setWorldYaw(yaw)
+            if (json.has(ActionID.HEAD_LIGHT)){
+                mHead.setHeadLightMode(json.getInt(ActionID.HEAD_LIGHT)) }
+        }else {
+            Log.e(LOG_TAG,"Not a head command")
+        }
+    }
 
-        Log.d(LOG_TAG, "Infrared - Left: $mInfraredDistanceLeft, Right: $mInfraredDistanceRight")
-        return values
+    fun setSpeeds(json: JSONObject){
+        val avMax = mBase.angularVelocityLimit
+        val vMax = mBase.linearVelocityLimit
+        Log.i(LOG_TAG,"Velocity limit: $vMax, angularVelocityLimit: $avMax")
+        val avSet = json.getDouble(ActionID.VELOCITY_ANGULAR).toFloat()
+        val vSet = json.getDouble(ActionID.VELOCITY_LINEAR).toFloat()
+        mBase.setAngularVelocity(avSet)
+        mBase.setLinearVelocity(vSet)
+    }
+
+    fun testFun(){
+        //mVision.g
+    }
+
+    fun returnSurroundings() :String{
+        val json = JSONObject()
+        json.put(ResponsID.DATA_LBL,ResponsID.DATA_SURROUNDINGS_ID)
+        json.put(ResponsID.DATA_TIME_LBL,mSensor.infraredDistance.timestamp)
+        json.put(ResponsID.DATA_SURROUNDINGS_IRLEFT,mSensor.infraredDistance.leftDistance.toInt())
+        json.put(ResponsID.DATA_SURROUNDINGS_IRRIGHT,mSensor.infraredDistance.rightDistance.toInt())
+        json.put(ResponsID.DATA_SURROUNDINGS_IRRIGHT,mSensor.infraredDistance.rightDistance.toInt())
+        json.put(ResponsID.DATA_SURROUNDINGS_ULTRASONIC,mSensor.ultrasonicDistance.distance)
+        Log.i(LOG_TAG,json.toString())
+
+        return json.toString()
     }
 
 }

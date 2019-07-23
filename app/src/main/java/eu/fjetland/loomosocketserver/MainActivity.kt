@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         socketThread.interrupt()
+        Log.i(LOG_TAG,"Interupt Socket")
         super.onStop()
     }
 

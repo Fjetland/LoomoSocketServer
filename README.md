@@ -32,24 +32,36 @@ Description of the agreed upon communication protocol between sender and receive
 ### Action Intentions
 List of action intentions and accepted JSON structures
 
-#### Locomotion control
-###### Keyword: loc
-loc: Loomo velocity control
+#### Head control
+hed: Head control
 
 Variable | Key | Description
 ---|---|---
-act  | loc | Activate Locomotion Commands
+act  | hed | Activate Head Commands
+**_Variable_** | **_Range_** | **_Description_**
+p | 0 to PI | [float] Desired pitch position
+t | -PI to PI | [float] Desired yaw position
+li| 0-13 | [int] (Optional) light modus
+
+
+#### Locomotion control
+###### Keyword: vel
+vel: Loomo velocity control
+
+Variable | Key | Description
+---|---|---
+act  | vel | Activate Locomotion Commands
 **_Variable_** | **_Range_** | **_Description_**
 v | 0-4 m/s? | [double] Desired velocity
-t | 0-0.5 /s? | [double] Desired CW turn rate
+av | 0-0.5 /s? | [double] Desired CW turn rate
 
 ###### Keyword: pos
 Variable | Key | Description
 ---|---|---
-act  | loc | Activate Locomotion Commands
+act  | pos | Activate Locomotion Commands
 **_Variable_** | **_Range_** | **_Description_**
-v | 0-4 m/s? | [double] Desired velocity
-t | 0-0.5 /s? | [double] Desired CW turn rate
+x | 0-4 m/s? |
+y | 0-0.5 /s? |
 
 #### Speak
 Variable | Key | Description
@@ -105,13 +117,9 @@ Number | Description
 
 Number | Description | Returns
 -------|-------------|---
-112 | All Data |
+112 | All Data | NOT IMPLEMENTED
+113 | Surroundings | Returns IR and Ultrasonic data
+114 | Velocity | Returns Velocity(m/s), and Angular Velocity (rad/s)
 33 | Error detected
 
 ###### JSON format
-
-Var | Unit | Description
--------|-------------|---
-ir | int(0) | int[0] - Left ir distance in mm int[0] - Left ir distance in mm
-ir | int(1) | Right ir distance in mm
-33 | Error detected

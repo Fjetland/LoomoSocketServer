@@ -22,8 +22,6 @@ class MySocket(myContext: Context) : Runnable {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT)
         _myThread = Thread.currentThread()
         serverSocket = ServerSocket(SOCKET_PORT)
-
-
         // Main TCP communication Loop
         while (!_myThread.isInterrupted) {
 
@@ -31,7 +29,6 @@ class MySocket(myContext: Context) : Runnable {
             val socket = awaitClient()
             updateClientIp(socket!!.remoteSocketAddress.toString())
             updateSocketLog("Connected to: ${socket.remoteSocketAddress}")
-
             // Listen to client
             mainListenerLoop(socket)
 
@@ -45,6 +42,10 @@ class MySocket(myContext: Context) : Runnable {
         } catch (e: IOException) {
             Log.e(LOG_TAG, "Close socket exeption: ",e)
         }
+
+        updateConversationHandler.post { viewModel.fullStoppMessage() }
+        Log.e(LOG_TAG,"Shutting Down MySocket")
+        loomo.onDelete()
 
     }
 
@@ -81,9 +82,11 @@ class MySocket(myContext: Context) : Runnable {
     private fun readResponseID() {
         Log.i(LOG_TAG, "Receiving a 1 bit message")
         when (val messageID = input.read()) {
+            ResponsID.STOP -> loomo.mBase.stop()
             ResponsID.DISCONNECT ->disconnectResponse()
             ResponsID.STRING_NEXT -> readString()
             ResponsID.RETURNTEST -> responseTester()
+            ResponsID.DATA_SURROUNDINGS_ID -> sendString2Client(loomo.returnSurroundings())
             else -> Log.e(LOG_TAG,"Unknown Response ID: $messageID")
         }
     }
@@ -94,8 +97,10 @@ class MySocket(myContext: Context) : Runnable {
         val json = JSONObject(string)
         if (json.has(ActionID.ACTION)) {
             when (json.getString(ActionID.ACTION)) {
+                ActionID.VELOCITY -> loomo.setSpeeds(json)
                 ActionID.SPEAK -> actionSpeak(json)
                 ActionID.VOLUME -> loomo.setVolume(json.getDouble(ActionID.VOLUME_VALUE))
+                ActionID.HEAD -> loomo.headPosition(json)
                 else -> Log.w(LOG_TAG, "Unknown JSON Class")
             }
         } else {
@@ -121,15 +126,17 @@ class MySocket(myContext: Context) : Runnable {
     }
 
     private fun responseTester(){
-        val string = "I'm here!"
+        val string = "Hello" //loomo.returnSurroundings()
         val bytes = string.toByteArray(charset(ENCODING))
         respondToClient(bytes)
 
-        // TEST CODE
-       loomo.infraredData()
-
-        // * TEST CODE
+        loomo.testFun()
         Log.d(LOG_TAG,"Response tester finished")
+    }
+
+    private fun sendString2Client(string: String){
+        val bytes = string.toByteArray(charset(ENCODING))
+        respondToClient(bytes)
     }
 
     private fun respondToClient(byteArray: ByteArray) {
@@ -150,6 +157,7 @@ class MySocket(myContext: Context) : Runnable {
             viewModel.updateComLogText(string)
         }
     }
+
 
     private fun disconnectResponse(){
         Log.e(LOG_TAG, "Unexpected Client disconnect: -1 from $serverSocket")
