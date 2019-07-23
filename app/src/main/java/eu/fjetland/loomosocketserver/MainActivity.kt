@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 
 import android.widget.TextView
 import androidx.lifecycle.Observer
@@ -54,8 +55,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        Log.i(LOG_TAG, "onResume")
         viewModel.updateMyIp()
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        Log.i(LOG_TAG, "onDestroy")
+        socketThread.interrupt()
+        super.onDestroy()
+    }
+
+    override fun onStop() {
+        socketThread.interrupt()
+        super.onStop()
     }
 
 

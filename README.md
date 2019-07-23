@@ -83,6 +83,7 @@ Number | Description
 3 | Ready for data
 4 | Re-send / Not received
 6 | Urgent message following
+7 | String following
 10 | Disconnecting
 
 ##### Commands to Loomo [16,31]
