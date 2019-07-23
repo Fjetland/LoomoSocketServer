@@ -9,5 +9,7 @@ class ResponsID {
         val DISCONNECT = 10
         val STRING_NEXT = 7
 
+        val RETURNTEST = 31
+
     }
 }

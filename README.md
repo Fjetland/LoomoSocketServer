@@ -91,7 +91,7 @@ Number | Description
 -------|------------
 16 | Status
 17 | Stop
-
+31 | Return Test Data
 
 
 ##### Loomo responses [32,64]
@@ -99,4 +99,19 @@ Number | Description
 Number | Description
 -------|------------
 32 | All Okay
+33 | Error detected
+
+##### Request Sensor data [112,-]
+
+Number | Description | Returns
+-------|-------------|---
+112 | All Data |
+33 | Error detected
+
+###### JSON format
+
+Var | Unit | Description
+-------|-------------|---
+ir | int(0) | int[0] - Left ir distance in mm int[0] - Left ir distance in mm
+ir | int(1) | Right ir distance in mm
 33 | Error detected

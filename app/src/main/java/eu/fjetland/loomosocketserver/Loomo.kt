@@ -5,11 +5,19 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import java.util.*
 import android.media.AudioManager
+import com.segway.robot.sdk.perception.sensor.Sensor
 import kotlin.Exception
+import com.segway.robot.sdk.base.bind.ServiceBinder
+import java.util.Arrays.asList
+import com.segway.robot.sdk.perception.sensor.SensorData
+
+
+
+
 
 
 class Loomo(applicationContext: Context) {
-    var textOK = false;
+    var textOK = false
     var context = applicationContext
     val tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
         if (status != TextToSpeech.ERROR){
@@ -18,10 +26,23 @@ class Loomo(applicationContext: Context) {
     })
     var mAudio= context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+     var mSensor = Sensor.getInstance()
+
+
     init {
         if (textOK) tts.language = Locale.US
         else Log.w(LOG_TAG,"Text To Speak not initialized")
         Log.i(LOG_TAG, "Loomo class initialized")
+
+        mSensor.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(LOG_TAG, "sensor onBind")
+
+            }
+            override fun onUnbind(reason: String) {
+
+            }
+        })
 
 
     }
@@ -49,14 +70,24 @@ class Loomo(applicationContext: Context) {
         Log.i(LOG_TAG,"Current Volume: ${mAudio.getStreamVolume(stream)}")
         //val min = mAudio.getStreamMinVolume(stream)
         val max = mAudio.getStreamMaxVolume(stream).toDouble()
-        val volume = max*vol;
+        val volume = max*vol
         try {
             mAudio.setStreamVolume(stream,volume.toInt(), AudioManager.FLAG_SHOW_UI)
-        } catch (e: Exception){
-
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Audio exception: ", e)
         }
+    }
 
+    fun infraredData() : IntArray {
+        val mInfraredData = mSensor.querySensorData(Arrays.asList(Sensor.INFRARED_BODY))[0]
+        val mInfraredDistanceLeft = mInfraredData.intData[0]
+        val mInfraredDistanceRight = mInfraredData.intData[1]
+        val values = intArrayOf(mInfraredDistanceLeft,mInfraredDistanceRight)
+        //values[0] = mInfraredDistanceLeft.toDouble()
+        //values[2] = mInfraredDistanceRight.toDouble()
 
+        Log.d(LOG_TAG, "Infrared - Left: $mInfraredDistanceLeft, Right: $mInfraredDistanceRight")
+        return values
     }
 
 }

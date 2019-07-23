@@ -83,6 +83,7 @@ class MySocket(myContext: Context) : Runnable {
         when (val messageID = input.read()) {
             ResponsID.DISCONNECT ->disconnectResponse()
             ResponsID.STRING_NEXT -> readString()
+            ResponsID.RETURNTEST -> responseTester()
             else -> Log.e(LOG_TAG,"Unknown Response ID: $messageID")
         }
     }
@@ -117,6 +118,24 @@ class MySocket(myContext: Context) : Runnable {
         val bytes = ByteArray(int)
         input.read(bytes,0,int)
         return bytes
+    }
+
+    private fun responseTester(){
+        val string = "I'm here!"
+        val bytes = string.toByteArray(charset(ENCODING))
+        respondToClient(bytes)
+
+        // TEST CODE
+       loomo.infraredData()
+
+        // * TEST CODE
+        Log.d(LOG_TAG,"Response tester finished")
+    }
+
+    private fun respondToClient(byteArray: ByteArray) {
+        val length = byteArray.size
+        output.write(length)
+        output.write(byteArray)
     }
 
     private fun updateClientIp(string: String) {
