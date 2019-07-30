@@ -15,7 +15,7 @@ class MyLifecycleObserver: LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onStartEvent() {
-        Log.i(LOG_TAG, "onStart")
+        Log.i(LOG_TAG, "onCreate")
 
     }
 

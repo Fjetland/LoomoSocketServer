@@ -9,14 +9,19 @@ import android.util.Log
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import eu.fjetland.loomosocketserver.connection.Communicator
 import eu.fjetland.loomosocketserver.connection.MySocket
+import eu.fjetland.loomosocketserver.loomo.LoomoAudio
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 var updateConversationHandler = Handler()
-lateinit var viewModel : DebugViewModel
+lateinit var viewModel : MainViewModel
 
 class MainActivity : AppCompatActivity() {
+    private val TAG = "MainActivity"
+
+    var loomoAudio = LoomoAudio(this)
 
     lateinit var socketThread: Thread
     var isWifiOn = true
@@ -34,10 +39,12 @@ class MainActivity : AppCompatActivity() {
         //supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.hide()
 
+        loomoAudio.onCreate() // Setup Audio
+
         lifecycle.addObserver(MyLifecycleObserver())
 
         viewModel = ViewModelProviders.of(this)
-            .get(DebugViewModel::class.java)
+            .get(MainViewModel::class.java)
         viewModel.myIp.observe(this, Observer {
             txtIpDisplay.text = it
         })
@@ -48,26 +55,37 @@ class MainActivity : AppCompatActivity() {
             txtSocketLogg.text = it
         })
 
-        socketThread = Thread(MySocket(this))
+        viewModel.volume.observe(this, Observer {vol ->
+            if (vol != null) {
+                loomoAudio.setVolume(vol)
+            }
+        })
+
+
+        socketThread = Thread(Communicator(this))
+        //socketThread = Thread(MySocket(this))
+
         socketThread.start()
-        Context.AUDIO_SERVICE
 
     }
 
     override fun onResume() {
+
         Log.i(LOG_TAG, "onResume")
         viewModel.updateMyIp()
         super.onResume()
     }
 
     override fun onDestroy() {
-        Log.i(LOG_TAG, "onDestroy")
         socketThread.interrupt()
+        Log.i(LOG_TAG, "onDestroy")
+        loomoAudio.onDelete()
         super.onDestroy()
     }
 
     override fun onStop() {
-        socketThread.interrupt()
+
+        //socketThread.interrupt()
         Log.i(LOG_TAG,"Interupt Socket")
         super.onStop()
     }

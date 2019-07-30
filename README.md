@@ -50,7 +50,7 @@ vel: Loomo velocity control
 
 Variable | Key | Description
 ---|---|---
-act  | vel | Activate Locomotion Commands
+act  | vel | Activate Velocity Commands
 **_Variable_** | **_Range_** | **_Description_**
 v | 0-4 m/s? | [double] Desired velocity
 av | 0-0.5 /s? | [double] Desired CW turn rate

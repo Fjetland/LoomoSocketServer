@@ -17,7 +17,7 @@ class ResponsID {
 
         // Data returns
         val DATA_LBL = "dat"
-        val DATA_TIME_LBL = "t"
+        val DATA_TIME_LBL = "yaw"
         val DATA_SURROUNDINGS_ID = 113
         val DATA_SURROUNDINGS_IRLEFT = "irl"
         val DATA_SURROUNDINGS_IRRIGHT = "irr"

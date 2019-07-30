@@ -2,18 +2,26 @@ package eu.fjetland.loomosocketserver
 
 import android.app.Application
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import eu.fjetland.loomosocketserver.connection.IpHelper
-import kotlinx.android.synthetic.main.activity_main.*
+import eu.fjetland.loomosocketserver.data.*
 
-class DebugViewModel(app: Application) : AndroidViewModel(app) {
+class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val myIp = MutableLiveData<String>()
     val clientIp = MutableLiveData<String>()
     val readLog =  MutableLiveData<String>()
     private val context = app
+
+    /**
+     * Robot operators
+     */
+    val head = MutableLiveData<Head?>()
+    val velocity = MutableLiveData<Velocity?>()
+    val position = MutableLiveData<Position?>()
+    val speak = MutableLiveData<Speak?>()
+    val volume = MutableLiveData<Volume?>()
 
     init {
         Log.i(LOG_TAG, "Debug View Model created")
@@ -38,4 +46,7 @@ class DebugViewModel(app: Application) : AndroidViewModel(app) {
         readLog.value = "ERROR: Socket port dead. Restart!"
     }
 
+    /**
+     * Clear Robot opperators after use
+     */
 }

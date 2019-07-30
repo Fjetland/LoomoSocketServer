@@ -3,6 +3,8 @@ package eu.fjetland.loomosocketserver.connection
 import android.content.Context
 import android.util.Log
 import eu.fjetland.loomosocketserver.*
+import eu.fjetland.loomosocketserver.data.Action
+import eu.fjetland.loomosocketserver.data.Head
 import org.json.JSONObject
 import java.io.*
 import java.net.ServerSocket
@@ -22,6 +24,7 @@ class MySocket(myContext: Context) : Runnable {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT)
         _myThread = Thread.currentThread()
         serverSocket = ServerSocket(SOCKET_PORT)
+
         // Main TCP communication Loop
         while (!_myThread.isInterrupted) {
 
@@ -29,9 +32,10 @@ class MySocket(myContext: Context) : Runnable {
             val socket = awaitClient()
             updateClientIp(socket!!.remoteSocketAddress.toString())
             updateSocketLog("Connected to: ${socket.remoteSocketAddress}")
+            //loomo.mTransferPresenter.start()
             // Listen to client
             mainListenerLoop(socket)
-
+            //loomo.mTransferPresenter.stop()
             // Notify of lost connection
             updateClientIp(context.getString(R.string.lost_client_msg))
             updateSocketLog(context.getString(R.string.tcp_reconnect_message))
@@ -94,12 +98,13 @@ class MySocket(myContext: Context) : Runnable {
         Log.i(LOG_TAG,"Receiving Action intent with: $bytes bytes")
         val string = readBytesToString(bytes)
         updateSocketLog(string)
+        val data = Action(string)
         val json = JSONObject(string)
         if (json.has(ActionID.ACTION)) {
             when (json.getString(ActionID.ACTION)) {
                 ActionID.VELOCITY -> loomo.setSpeeds(json)
                 ActionID.SPEAK -> actionSpeak(json)
-                ActionID.VOLUME -> loomo.setVolume(json.getDouble(ActionID.VOLUME_VALUE))
+                ActionID.VOLUME -> updateConversationHandler.post { viewModel.volume.value = data.json2volume() }
                 ActionID.HEAD -> loomo.headPosition(json)
                 else -> Log.w(LOG_TAG, "Unknown JSON Class")
             }
@@ -126,9 +131,11 @@ class MySocket(myContext: Context) : Runnable {
     }
 
     private fun responseTester(){
-        val string = "Hello" //loomo.returnSurroundings()
-        val bytes = string.toByteArray(charset(ENCODING))
-        respondToClient(bytes)
+        //val string = "Hello" //loomo.returnSurroundings()
+
+        val bytes = loomo.getBytesFromBitmap()//string.toByteArray(charset(ENCODING))
+        //val string = "Hello" //loomo.returnSurroundings()
+        respondWithLongByteArray(bytes)
 
         loomo.testFun()
         Log.d(LOG_TAG,"Response tester finished")
@@ -142,6 +149,15 @@ class MySocket(myContext: Context) : Runnable {
     private fun respondToClient(byteArray: ByteArray) {
         val length = byteArray.size
         output.write(length)
+        output.write(byteArray)
+    }
+
+    private fun respondWithLongByteArray(byteArray: ByteArray) {
+        val length = byteArray.size
+        val stringNum = length.toString().toByteArray(charset(ENCODING))
+        val lengthOfLength = stringNum.size
+        output.write(lengthOfLength)
+        output.write(stringNum)
         output.write(byteArray)
     }
 
@@ -171,7 +187,7 @@ class MySocket(myContext: Context) : Runnable {
         val pitch = obj.getDouble(ActionID.SPEAK_PITCH)
         readyForData()
         val message = readBytesToString(length)
-        loomo.speak(message,que,pitch)
+        //loomo.speak(message,que,pitch)
     }
 
     private fun readyForData() {

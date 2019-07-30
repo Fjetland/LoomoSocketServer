@@ -10,14 +10,14 @@ class ActionID {
 
         val SPEAK = "spk"
         val SPEAK_LENGTH = "l"
-        val SPEAK_QUE = "q"
-        val SPEAK_PITCH = "p"
+        val SPEAK_QUE = "que"
+        val SPEAK_PITCH = "pitch"
 
         val VOLUME = "vol"
         val VOLUME_VALUE = "v"
 
         val HEAD = "hed"
-        val HEAD_PITCH = "p"
+        val HEAD_PITCH = "pitch"
         val HEAD_YAW = "y"
         val HEAD_LIGHT = "li"
     }
