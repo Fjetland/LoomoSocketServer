@@ -1,4 +1,4 @@
-package eu.fjetland.loomosocketserver.connection
+package eu.fjetland.loomosocketserver.data
 
 class ResponsID {
     companion object {

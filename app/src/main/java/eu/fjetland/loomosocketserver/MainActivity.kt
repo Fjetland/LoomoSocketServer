@@ -1,6 +1,5 @@
 package eu.fjetland.loomosocketserver
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -10,7 +9,6 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator
-import eu.fjetland.loomosocketserver.connection.MySocket
 import eu.fjetland.loomosocketserver.loomo.LoomoAudio
 import eu.fjetland.loomosocketserver.loomo.LoomoBase
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
@@ -51,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         loomoBase = LoomoBase(this)
 
 
-        lifecycle.addObserver(MyLifecycleObserver())
+        //lifecycle.addObserver(MyLifecycleObserver())
 
         viewModel = ViewModelProviders.of(this)
             .get(MainViewModel::class.java)
