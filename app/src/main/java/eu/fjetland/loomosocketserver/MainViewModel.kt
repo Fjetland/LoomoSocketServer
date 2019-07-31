@@ -22,6 +22,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val position = MutableLiveData<Position?>()
     val speak = MutableLiveData<Speak?>()
     val volume = MutableLiveData<Volume?>()
+    val endableDrive = MutableLiveData<EnableDrive?>()
 
     init {
         Log.i(LOG_TAG, "Debug View Model created")

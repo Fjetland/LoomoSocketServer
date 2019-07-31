@@ -90,6 +90,7 @@ class Communicator(private val context: Context) : Runnable {
             if (action.actionType in Action.ACTIONLIST || action.actionType in DataResponce.DATALIST){ // Check if known action
                 when (action.actionType) { // Decide responce
                     Action.HEAD -> updateHead(action.json2head())
+                    Action.ENABLE_DRIVE -> updateEnableDrive(action.json2enableDrive())
                     Action.VELOCITY -> updateVelocity(action.json2velocity())
                     Action.POSITION -> updatePosition(action.json2position())
                     Action.SPEAK -> updateSpeak(action.json2speak())
@@ -129,6 +130,12 @@ class Communicator(private val context: Context) : Runnable {
     private fun updateHead(head: Head) {
         updateConversationHandler.post {
             viewModel.head.value = head
+        }
+    }
+
+    private fun updateEnableDrive(enableDrive: EnableDrive) {
+        updateConversationHandler.post {
+            viewModel.endableDrive.value = enableDrive
         }
     }
 

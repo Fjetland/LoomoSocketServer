@@ -7,6 +7,9 @@ class Action(string: String){
     companion object {
         val ACTION = "ack"
 
+        val ENABLE_DRIVE = "enableDrive"
+        val ENABLE_DRIVE_VALUE = "value"
+
         val VELOCITY = "vel"
         val VELOCITY_ANGULAR = "av"
         val VELOCITY_LINEAR = "v"
@@ -14,6 +17,8 @@ class Action(string: String){
         val POSITION = "pos"
         val POSITION_X = "x"
         val POSITION_Y = "y"
+        val POSITION_TH = "th"
+        val POSITION_ADD = "add"
 
         val SPEAK = "spk"
         val SPEAK_LENGTH = "l"
@@ -26,9 +31,13 @@ class Action(string: String){
         val HEAD = "hed"
         val HEAD_PITCH = "p"
         val HEAD_YAW = "y"
+        val HEAD_MODE = "m"
         val HEAD_LIGHT = "li"
 
-        val ACTIONLIST = listOf(VELOCITY, POSITION, SPEAK, VOLUME, HEAD)
+        val HEAD_SET_SMOOTH = 0
+        val HEAD_SET_LOCK = 1
+
+        val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, SPEAK, VOLUME, HEAD)
     }
 
     constructor(byteArray: ByteArray) : this(byteArray.toString(charset(ENCODING)))
@@ -45,10 +54,13 @@ class Action(string: String){
     }
 
     fun json2head() : Head {
-       val obj : Head = Head(jsonObject.getDouble(HEAD_PITCH).toFloat(),
+       val obj = Head(jsonObject.getDouble(HEAD_PITCH).toFloat(),
            jsonObject.getDouble(HEAD_YAW).toFloat())
         if (jsonObject.has(HEAD_LIGHT)){
             obj.li = jsonObject.getInt(HEAD_LIGHT)
+        }
+        if (jsonObject.has(HEAD_MODE)) {
+            obj.mode = jsonObject.getInt(HEAD_MODE)
         }
         return  obj
     }
@@ -66,6 +78,12 @@ class Action(string: String){
             jsonObject.getDouble(POSITION_X).toFloat(),
             jsonObject.getDouble(POSITION_Y).toFloat()
         )
+        if (jsonObject.has(POSITION_TH)){
+            obj.th = jsonObject.getDouble(POSITION_TH).toFloat()
+        }
+        if (jsonObject.has(POSITION_ADD)){
+            obj.add = jsonObject.getBoolean(POSITION_ADD)
+        }
         return obj
     }
 
@@ -79,12 +97,22 @@ class Action(string: String){
     fun json2volume() : Volume {
         return Volume(jsonObject.getDouble(VOLUME_VALUE))
     }
+
+    fun json2enableDrive() : EnableDrive {
+        return EnableDrive(jsonObject.getBoolean(ENABLE_DRIVE_VALUE))
+    }
 }
+
+data class EnableDrive(
+    val drive : Boolean,
+    val act: String = Action.ENABLE_DRIVE
+)
 
 data class Head(
     var pitch :Float, // Head pitch
     var yaw : Float, // Head Yaw
     var li : Int = 10, // Head light mode 0-13
+    var mode : Int = Action.HEAD_SET_SMOOTH,
     val act : String = Action.HEAD)
 
 data class Velocity(
@@ -96,6 +124,8 @@ data class Velocity(
 data class Position(
     val x : Float, // X direction absolute movement
     val y : Float, // Y direction absolute movement
+    var th: Float? = null,
+    var add: Boolean = false,
     val act: String = Action.POSITION
 )
 

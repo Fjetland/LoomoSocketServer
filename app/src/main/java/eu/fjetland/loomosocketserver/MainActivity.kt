@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator
 import eu.fjetland.loomosocketserver.connection.MySocket
 import eu.fjetland.loomosocketserver.loomo.LoomoAudio
+import eu.fjetland.loomosocketserver.loomo.LoomoBase
+import eu.fjetland.loomosocketserver.loomo.LoomoHead
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -21,7 +23,10 @@ lateinit var viewModel : MainViewModel
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
+
     var loomoAudio = LoomoAudio(this)
+    lateinit var loomoHead : LoomoHead
+    lateinit var loomoBase: LoomoBase
 
     lateinit var socketThread: Thread
     var isWifiOn = true
@@ -40,11 +45,17 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         loomoAudio.onCreate() // Setup Audio
+        loomoHead = LoomoHead(this)
+        loomoBase = LoomoBase(this)
 
         lifecycle.addObserver(MyLifecycleObserver())
 
         viewModel = ViewModelProviders.of(this)
             .get(MainViewModel::class.java)
+
+        /**
+         * Display actions
+         */
         viewModel.myIp.observe(this, Observer {
             txtIpDisplay.text = it
         })
@@ -55,11 +66,56 @@ class MainActivity : AppCompatActivity() {
             txtSocketLogg.text = it
         })
 
-        viewModel.volume.observe(this, Observer {vol ->
-            if (vol != null) {
-                loomoAudio.setVolume(vol)
+        /**
+         * Loomo Actions
+         */
+
+        viewModel.volume.observe(this, Observer {
+            if (it != null) {
+                Log.i(TAG, "Action: $it")
+                loomoAudio.setVolume(it)
             }
         })
+
+        viewModel.speak.observe(this, Observer {
+            if (it != null){
+                Log.i(TAG, "Action: $it")
+                loomoAudio.speak(it)
+            }
+        })
+
+        viewModel.endableDrive.observe(this, Observer {
+            if (it != null) {
+                Log.i(TAG, "Action: $it")
+                loomoBase.setEnableDrive(it)
+            }
+        })
+
+        viewModel.velocity.observe(this, Observer {
+            if (it != null){
+                Log.i(TAG, "Action: $it")
+                loomoBase.setVelocity(it)
+            }
+        })
+
+        viewModel.position.observe(this, Observer {
+            if (it != null){
+                Log.i(TAG, "Action: $it")
+                loomoBase.setPosition(it)
+            }
+        })
+
+        viewModel.head.observe(this, Observer {
+            if (it != null){
+                Log.i(TAG, "Action: $it")
+                loomoHead.setHead(it)
+            }
+        })
+
+
+        /**
+         * Start Communication thread
+         */
 
 
         socketThread = Thread(Communicator(this))
