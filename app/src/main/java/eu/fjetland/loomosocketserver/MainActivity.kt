@@ -14,6 +14,7 @@ import eu.fjetland.loomosocketserver.connection.MySocket
 import eu.fjetland.loomosocketserver.loomo.LoomoAudio
 import eu.fjetland.loomosocketserver.loomo.LoomoBase
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
+import eu.fjetland.loomosocketserver.loomo.LoomoRealSense
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     var loomoAudio = LoomoAudio(this)
     lateinit var loomoHead : LoomoHead
     lateinit var loomoBase: LoomoBase
+    lateinit var loomoRealSense: LoomoRealSense
 
     lateinit var socketThread: Thread
     var isWifiOn = true
@@ -48,10 +50,13 @@ class MainActivity : AppCompatActivity() {
         loomoHead = LoomoHead(this)
         loomoBase = LoomoBase(this)
 
+
         lifecycle.addObserver(MyLifecycleObserver())
 
         viewModel = ViewModelProviders.of(this)
             .get(MainViewModel::class.java)
+
+        loomoRealSense = LoomoRealSense(this, viewModel)
 
         /**
          * Display actions
@@ -126,10 +131,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-
         Log.i(LOG_TAG, "onResume")
         viewModel.updateMyIp()
         super.onResume()
+
+        loomoRealSense.startCamera()
     }
 
     override fun onDestroy() {

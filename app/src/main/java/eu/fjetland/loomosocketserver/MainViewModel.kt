@@ -23,8 +23,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val speak = MutableLiveData<Speak?>()
     val volume = MutableLiveData<Volume?>()
     val endableDrive = MutableLiveData<EnableDrive?>()
+    val test = MutableLiveData<Boolean>()
 
     init {
+        test.value = false
+
         Log.i(LOG_TAG, "Debug View Model created")
         myIp.value = "Searching for IP..."
         clientIp.value = "Not Connected"
