@@ -5,40 +5,40 @@ import org.json.JSONObject
 class DataResponce {
     companion object {
         // Data returns
-        val DATA_LBL = "dat"
-        val TIME_LBL = "time"
+        const val DATA_LBL = "dat"
+        const val TIME_LBL = "time"
 
 
-        val SURROUNDINGS = "sSur"
-        val SURROUNDINGS_IRLEFT = "irl"
-        val SURROUNDINGS_IRRIGHT = "irr"
-        val SURROUNDINGS_ULTRASONIC = "uss"
+        const val SURROUNDINGS = "sSur"
+        const val SURROUNDINGS_IRLEFT = "irl"
+        const val SURROUNDINGS_IRRIGHT = "irr"
+        const val SURROUNDINGS_ULTRASONIC = "uss"
 
-        val WHEEL_SPEED = "sWS"
-        val WHEEL_SPEED_L = "vl"
-        val WHEEL_SPEED_R = "vr"
+        const val WHEEL_SPEED = "sWS"
+        const val WHEEL_SPEED_L = "vl"
+        const val WHEEL_SPEED_R = "vr"
 
-        val POSE2D = "sP2d"
-        val POSE2D_X = "x"
-        val POSE2D_Y = "y"
-        val POSE2D_TH = "th"
-        val POSE2D_VL = "vl"
-        val POSE2D_VA = "va"
+        const val POSE2D = "sP2d"
+        const val POSE2D_X = "x"
+        const val POSE2D_Y = "y"
+        const val POSE2D_TH = "th"
+        const val POSE2D_VL = "vl"
+        const val POSE2D_VA = "va"
 
-        val HEAD_WORLD = "sHPw"
-        val HEAD_JOINT = "sHPj"
-        val HEAD_PITCH = "p"
-        val HEAD_ROLL = "r"
-        val HEAD_YAW = "y"
+        const val HEAD_WORLD = "sHPw"
+        const val HEAD_JOINT = "sHPj"
+        const val HEAD_PITCH = "p"
+        const val HEAD_ROLL = "r"
+        const val HEAD_YAW = "y"
 
-        val BASE_POSE = "sBP"
-        val BASE_POSE_PITCH = "p"
-        val BASE_POSE_ROLL = "r"
-        val BASE_POSE_YAW = "p"
+        const val BASE_POSE = "sBP"
+        const val BASE_POSE_PITCH = "p"
+        const val BASE_POSE_ROLL = "r"
+        const val BASE_POSE_YAW = "p"
 
-        val BASE_TICK = "sBT"
-        val BASE_TICK_L = "l"
-        val BASE_TICK_R = "r"
+        const val BASE_TICK = "sBT"
+        const val BASE_TICK_L = "l"
+        const val BASE_TICK_R = "r"
 
         val DATALIST = listOf(SURROUNDINGS, WHEEL_SPEED, POSE2D,
                                 HEAD_WORLD, HEAD_JOINT, BASE_POSE, BASE_TICK)

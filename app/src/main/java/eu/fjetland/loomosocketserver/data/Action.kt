@@ -5,37 +5,37 @@ import org.json.JSONObject
 
 class Action(string: String){
     companion object {
-        val ACTION = "ack"
+        const val ACTION = "ack"
 
-        val ENABLE_DRIVE = "enableDrive"
-        val ENABLE_DRIVE_VALUE = "value"
+        const val ENABLE_DRIVE = "enableDrive"
+        const val ENABLE_DRIVE_VALUE = "value"
 
-        val VELOCITY = "vel"
-        val VELOCITY_ANGULAR = "av"
-        val VELOCITY_LINEAR = "v"
+        const val VELOCITY = "vel"
+        const val VELOCITY_ANGULAR = "av"
+        const val VELOCITY_LINEAR = "v"
 
-        val POSITION = "pos"
-        val POSITION_X = "x"
-        val POSITION_Y = "y"
-        val POSITION_TH = "th"
-        val POSITION_ADD = "add"
+        const val POSITION = "pos"
+        const val POSITION_X = "x"
+        const val POSITION_Y = "y"
+        const val POSITION_TH = "th"
+        const val POSITION_ADD = "add"
 
-        val SPEAK = "spk"
-        val SPEAK_LENGTH = "l"
-        val SPEAK_QUE = "q"
-        val SPEAK_PITCH = "p"
+        const val SPEAK = "spk"
+        const val SPEAK_LENGTH = "l"
+        const val SPEAK_QUE = "q"
+        const val SPEAK_PITCH = "p"
 
-        val VOLUME = "vol"
-        val VOLUME_VALUE = "v"
+        const val VOLUME = "vol"
+        const val VOLUME_VALUE = "v"
 
-        val HEAD = "hed"
-        val HEAD_PITCH = "p"
-        val HEAD_YAW = "y"
-        val HEAD_MODE = "m"
-        val HEAD_LIGHT = "li"
+        const val HEAD = "hed"
+        const val HEAD_PITCH = "p"
+        const val HEAD_YAW = "y"
+        const val HEAD_MODE = "m"
+        const val HEAD_LIGHT = "li"
 
-        val HEAD_SET_SMOOTH = 0
-        val HEAD_SET_LOCK = 1
+        const val HEAD_SET_SMOOTH = 0
+        const val HEAD_SET_LOCK = 1
 
         val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, SPEAK, VOLUME, HEAD)
     }

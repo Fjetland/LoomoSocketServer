@@ -16,12 +16,12 @@ class Communicator(private val context: Context) : Runnable {
     private lateinit var thread: Thread
     private lateinit var serverSocket: ServerSocket
 
-    var shutDownSocket = false
-    var isConnected = false
-    lateinit var input: InputStream
-    lateinit var output: OutputStream
+    private var shutDownSocket = false
+    private var isConnected = false
+    private lateinit var input: InputStream
+    private lateinit var output: OutputStream
 
-    val mSensor = LoomoSensor(context)
+    private val mSensor = LoomoSensor(context)
 
     override fun run() {
         Log.i(TAG, "Starting Communicator")

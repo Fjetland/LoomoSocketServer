@@ -23,13 +23,12 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
 
-    var loomoAudio = LoomoAudio(this)
-    lateinit var loomoHead : LoomoHead
-    lateinit var loomoBase: LoomoBase
-    lateinit var loomoRealSense: LoomoRealSense
+    private var loomoAudio = LoomoAudio(this)
+    private lateinit var loomoHead : LoomoHead
+    private lateinit var loomoBase : LoomoBase
+    private lateinit var loomoRealSense : LoomoRealSense
 
-    lateinit var socketThread: Thread
-    var isWifiOn = true
+    private lateinit var socketThread: Thread
 
     private val txtIpDisplay by lazy {
         findViewById<TextView>(R.id.txtIpDisplay)
