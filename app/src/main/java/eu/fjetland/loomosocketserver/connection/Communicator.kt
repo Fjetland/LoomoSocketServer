@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import eu.fjetland.loomosocketserver.*
 import eu.fjetland.loomosocketserver.data.*
+import eu.fjetland.loomosocketserver.loomo.LoomoSensor
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
@@ -19,6 +20,8 @@ class Communicator(private val context: Context) : Runnable {
     var isConnected = false
     lateinit var input: InputStream
     lateinit var output: OutputStream
+
+    val mSensor = LoomoSensor(context)
 
     override fun run() {
         Log.i(TAG, "Starting Communicator")
@@ -84,13 +87,20 @@ class Communicator(private val context: Context) : Runnable {
              * Read and translate actions here
              */
             val action = Action(readBytes(bytes)) // Read and phrase JSON
-            if (action.actionType in Action.ACTIONLIST){ // Check if known action
+            if (action.actionType in Action.ACTIONLIST || action.actionType in DataResponce.DATALIST){ // Check if known action
                 when (action.actionType) { // Decide responce
                     Action.HEAD -> updateHead(action.json2head())
                     Action.VELOCITY -> updateVelocity(action.json2velocity())
                     Action.POSITION -> updatePosition(action.json2position())
                     Action.SPEAK -> updateSpeak(action.json2speak())
                     Action.VOLUME ->  updateVolume(action.json2volume())
+                    DataResponce.SURROUNDINGS -> sendSurroundings()
+                    DataResponce.WHEEL_SPEED -> sendWheelSpeed()
+                    DataResponce.POSE2D -> sendPose2D()
+                    DataResponce.HEAD_WORLD -> sendHeadPoseWorld()
+                    DataResponce.HEAD_JOINT -> sendHeadPoseJoint()
+                    DataResponce.BASE_POSE -> sendBasePose()
+                    DataResponce.BASE_TICK -> sendBaseTick()
                     else -> Log.w(TAG,"Action Not implemented")
                 }
             } else {
@@ -160,6 +170,45 @@ class Communicator(private val context: Context) : Runnable {
     }
 
     /**
+     * Sensor reading responces
+     */
+
+    private fun sendSurroundings() {
+        val data = mSensor.getSurroundings()
+        sendString(DataResponce.sensSurroundings2JSONstring(data))
+    }
+
+    private fun sendWheelSpeed() {
+        val data = mSensor.getWheelSpeed()
+        sendString(DataResponce.sensWheelSpeed2JSONstring(data))
+    }
+
+    private fun sendHeadPoseWorld() {
+        val data = mSensor.getHeadPoseWorld()
+        sendString(DataResponce.sensHeadPoseWorld2JSONstring(data))
+    }
+
+    private fun sendHeadPoseJoint() {
+        val data = mSensor.getHeadPoseJoint()
+        sendString(DataResponce.sensHeadPoseJoint2JSONstring(data))
+    }
+
+    private fun sendBasePose() {
+        val data = mSensor.getSensBasePose()
+        sendString(DataResponce.sensBasePose2JSONstring(data))
+    }
+
+    private fun sendBaseTick() {
+        val data = mSensor.getSensBaseTick()
+        sendString(DataResponce.sensBaseTick2JSONstring(data))
+    }
+
+    private fun sendPose2D() {
+        val data = mSensor.getSensPose2D()
+        sendString(DataResponce.sensPose2D2JSONstring(data))
+    }
+
+    /**
      * Utilitys
      */
 
@@ -175,5 +224,16 @@ class Communicator(private val context: Context) : Runnable {
         } catch (e: Exception) {
             "Nothing"
         }
+    }
+
+    private fun sendBytes(byteArray: ByteArray) {
+        output.write(byteArray)
+    }
+
+    private fun sendString(string: String){
+        val byteArray = string.toByteArray(charset(ENCODING))
+        val length = byteArrayOf(byteArray.size.toByte())
+        sendBytes(length)
+        sendBytes(byteArray)
     }
 }
