@@ -5,6 +5,9 @@ import org.json.JSONObject
 
 class Action(string: String){
     companion object {
+        /**
+         * Must correspond with MATLAB and doccumentation
+         */
         const val ACTION = "ack"
 
         const val ENABLE_DRIVE = "enableDrive"
@@ -103,19 +106,19 @@ class Action(string: String){
     }
 }
 
-data class EnableDrive(
+data class EnableDrive( //
     val drive : Boolean,
     val act: String = Action.ENABLE_DRIVE
 )
 
-data class Head(
+data class Head( //
     var pitch :Float, // Head pitch
     var yaw : Float, // Head Yaw
     var li : Int = 10, // Head light mode 0-13
     var mode : Int = Action.HEAD_SET_SMOOTH,
     val act : String = Action.HEAD)
 
-data class Velocity(
+data class Velocity( //
     val v : Float, // Linear Velocity
     val av : Float, // Angular velocity
     val act: String = Action.VELOCITY
