@@ -10,6 +10,7 @@ import eu.fjetland.loomosocketserver.data.Velocity
 import com.segway.robot.algo.Pose2D
 import com.segway.robot.algo.minicontroller.CheckPoint
 import com.segway.robot.algo.minicontroller.CheckPointStateListener
+import eu.fjetland.loomosocketserver.SafetyLimits
 
 
 class LoomoBase(context: Context) {
@@ -54,10 +55,20 @@ class LoomoBase(context: Context) {
 
     fun setVelocity(velocity: Velocity){
         if (drive) {
+            var linVel = velocity.v
+            if (linVel > SafetyLimits.LINEAR_VELOCITY_LIMIT){
+                linVel = SafetyLimits.LINEAR_VELOCITY_LIMIT
+            }
+
+            var angVel = velocity.av
+            if (angVel > SafetyLimits.ANGULAR_VELOCITY_LIMIT){
+                angVel = SafetyLimits.ANGULAR_VELOCITY_LIMIT
+            }
+
             isDrivingOnCheckPoints = false
             mBase.controlMode = Base.CONTROL_MODE_RAW
-            mBase.setLinearVelocity(velocity.v)
-            mBase.setAngularVelocity(velocity.av)
+            mBase.setLinearVelocity(linVel)
+            mBase.setAngularVelocity(angVel)
         }
     }
 

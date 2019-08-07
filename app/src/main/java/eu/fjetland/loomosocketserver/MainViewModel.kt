@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import eu.fjetland.loomosocketserver.connection.IpHelper
 import eu.fjetland.loomosocketserver.data.*
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
+import java.nio.ByteBuffer
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -28,6 +29,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val volume = MutableLiveData<Volume?>()
     val endableDrive = MutableLiveData<EnableDrive?>()
 
+    val visionIsActive = MutableLiveData<Boolean>()
+
+    val realSenseColorImage = MutableLiveData<Bitmap>()
+    val realSenseDepthImage = MutableLiveData<Bitmap>()
+
+    val colorBitArray = MutableLiveData<ByteArray>()
+
+
 
     init {
         Log.i(LOG_TAG, "Debug View Model created")
@@ -35,6 +44,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         clientIp.value = "Not Connected"
         readLog.value = "Awaiting remote connection..."
         isConnected.value = false
+        realSenseColorImage.value = Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888)
+        realSenseDepthImage.value = Bitmap.createBitmap(320,240,Bitmap.Config.RGB_565)
+        colorBitArray.value = byteArrayOf(0,0)
+        visionIsActive.value = false
     }
 
     fun updateMyIp() {

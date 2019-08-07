@@ -102,6 +102,7 @@ class Communicator(private val context: Context) : Runnable {
                     DataResponce.HEAD_JOINT -> sendHeadPoseJoint()
                     DataResponce.BASE_IMU -> sendBaseImu()
                     DataResponce.BASE_TICK -> sendBaseTick()
+                    DataResponce.IMAGE -> sendImage()
                     else -> Log.w(TAG,"Action Not implemented")
                 }
             } else {
@@ -214,6 +215,13 @@ class Communicator(private val context: Context) : Runnable {
     private fun sendPose2D() {
         val data = mSensor.getSensPose2D()
         sendString(DataResponce.sensPose2D2JSONstring(data))
+    }
+
+    private fun sendImage() {
+        val meta = ImageResponce(viewModel.colorBitArray.value?.size ?: 0)
+        sendString(DataResponce.sensImage2JSONstring(meta))
+
+        sendBytes(viewModel.colorBitArray.value ?: byteArrayOf(0,0,0))
     }
 
     /**

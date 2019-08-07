@@ -124,7 +124,20 @@
             android:gravity="center"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            android:id="@+id/linearLayout">
+            android:id="@+id/linearLayout"
+            >
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:layout_width="170dp"
+                    android:layout_height="110dp"
+                    tools:srcCompat="@tools:sample/avatars[0]"
+                    android:id="@+id/viewFinderDepth"
+                    android:layout_weight="1"/>
+        </LinearLayout>
 
         <LinearLayout
                 android:orientation="vertical"
@@ -172,13 +185,27 @@
                     android:id="@+id/visionTextView"
                     style="@style/icon_name_style"/>
         </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:layout_width="170dp"
+                    android:layout_height="110dp"
+                    tools:srcCompat="@tools:sample/avatars[0]"
+                    android:id="@+id/viewFinder"
+                    android:layout_weight="1"/>
+        </LinearLayout>
+
     </LinearLayout>
 
     <ImageView
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:srcCompat="@drawable/ic_uiafaceng"
-            android:id="@+id/imageView10"
+            android:id="@+id/logoImageView"
             app:layout_constraintEnd_toStartOf="@+id/scrollView2"
             android:layout_marginEnd="16dp"
             app:layout_constraintStart_toStartOf="parent"

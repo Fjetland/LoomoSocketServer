@@ -1,12 +1,15 @@
 package eu.fjetland.loomosocketserver
 
+import android.hardware.camera2.CameraDevice
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.ContactsContract
 import android.util.Log
 import android.widget.ImageView
 
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator
@@ -24,9 +27,8 @@ import kotlinx.coroutines.launch
 var updateConversationHandler = Handler()
 lateinit var viewModel : MainViewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
     private val TAG = "MainActivity"
-
 
     private var loomoAudio = LoomoAudio(this)
     private lateinit var loomoHead : LoomoHead
@@ -54,6 +56,18 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.connectionImageView)
     }
 
+    private val logoImageView by lazy {
+        findViewById<ImageView>(R.id.logoImageView)
+    }
+
+    private val viewFinder by lazy {
+        findViewById<ImageView>(R.id.viewFinder)
+    }
+
+    private val viewFinderDepth by lazy {
+        findViewById<ImageView>(R.id.viewFinderDepth)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -70,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this)
             .get(MainViewModel::class.java)
 
-        loomoRealSense = LoomoRealSense(this, viewModel)
+        loomoRealSense = LoomoRealSense(this)
 
         /**
          * Display actions
@@ -138,6 +152,20 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        viewModel.realSenseColorImage.observe(this, Observer {
+            viewFinder.setImageBitmap(it)
+        })
+
+        viewModel.realSenseDepthImage.observe(this, Observer {
+            viewFinderDepth.setImageBitmap(it)
+        })
+
+        viewModel.visionIsActive.observe(this, Observer {
+            updateVisionIcon(it)
+        })
+
+
+
 
         /**
          * Start Communication thread
@@ -189,6 +217,14 @@ class MainActivity : AppCompatActivity() {
             driveImageView.setImageResource(R.drawable.ic_drive_on)
         } else {
             driveImageView.setImageResource(R.drawable.ic_drive_off)
+        }
+    }
+
+    fun updateVisionIcon(boolean: Boolean) {
+        if (boolean){
+            visionImageView.setImageResource(R.drawable.ic_camera_on)
+        } else {
+            visionImageView.setImageResource(R.drawable.ic_camera_off)
         }
     }
 
