@@ -1,12 +1,9 @@
 <resources>
     <string name="app_name">Loomo Socket Server</string>
 
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-
-    <string name="ip_label">My IP:</string>
+    <string name="ip_label">My IP</string>
     <string name="ip_placeholder">Detecting…</string>
-    <string name="ip_cli_lbl">Client IP:</string>
+    <string name="ip_cli_lbl">Client IP</string>
     <string name="ip_cli_Placeholder">Not Connected</string>
 
     <string name="socket_title">Socket Communication Log</string>
@@ -24,6 +21,8 @@
     <string name="speech_start">speech started</string>
     <string name="speech_end">speech end</string>
     <string name="speech_error">speech error:</string>
+    <string name="drive_label">Drive</string>
+    <string name="camera_label">Vision</string>
 
 
 </resources>
