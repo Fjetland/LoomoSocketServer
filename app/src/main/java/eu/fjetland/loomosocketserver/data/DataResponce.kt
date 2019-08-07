@@ -31,17 +31,17 @@ class DataResponce {
         const val HEAD_ROLL = "r"
         const val HEAD_YAW = "y"
 
-        const val BASE_POSE = "sBP"
-        const val BASE_POSE_PITCH = "p"
-        const val BASE_POSE_ROLL = "r"
-        const val BASE_POSE_YAW = "p"
+        const val BASE_IMU = "sBP"
+        const val BASE_IMU_PITCH = "p"
+        const val BASE_IMU_ROLL = "r"
+        const val BASE_IMU_YAW = "y"
 
         const val BASE_TICK = "sBT"
         const val BASE_TICK_L = "l"
         const val BASE_TICK_R = "r"
 
         val DATALIST = listOf(SURROUNDINGS, WHEEL_SPEED, POSE2D,
-                                HEAD_WORLD, HEAD_JOINT, BASE_POSE, BASE_TICK)
+                                HEAD_WORLD, HEAD_JOINT, BASE_IMU, BASE_TICK)
 
 
 
@@ -83,12 +83,12 @@ class DataResponce {
         return json.toString()
     }
 
-    fun sensBasePose2JSONstring(data : SensBasePose) : String {
+    fun sensBasePose2JSONstring(data : SensBaseImu) : String {
         val json = JSONObject()
-        json.put(DATA_LBL, BASE_POSE)
-        json.put(BASE_POSE_PITCH, data.pitch)
-        json.put(BASE_POSE_ROLL, data.roll)
-        json.put(BASE_POSE_YAW, data.yaw)
+        json.put(DATA_LBL, BASE_IMU)
+        json.put(BASE_IMU_PITCH, data.pitch)
+        json.put(BASE_IMU_ROLL, data.roll)
+        json.put(BASE_IMU_YAW, data.yaw)
 
         return json.toString()
     }
@@ -143,11 +143,11 @@ data class SensHeadPoseJoint(
     val label : String = DataResponce.HEAD_JOINT
 )
 
-data class SensBasePose(
+data class SensBaseImu(
     val pitch : Float,
     val roll : Float,
     val yaw : Float,
-    val label : String = DataResponce.BASE_POSE
+    val label : String = DataResponce.BASE_IMU
 )
 
 data class SensBaseTick(

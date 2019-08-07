@@ -78,10 +78,10 @@ class LoomoSensor (context: Context) {
         )
     }
 
-    fun getSensBasePose() : SensBasePose {
+    fun getSensBaseImu() : SensBaseImu {
         val mBaseImu = mSensor.querySensorData(listOf(Sensor.BASE_IMU))[0]
 
-        return SensBasePose(
+        return SensBaseImu(
             pitch = mBaseImu.floatData[0],
             roll = mBaseImu.floatData[1],
             yaw = mBaseImu.floatData[2]

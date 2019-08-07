@@ -53,9 +53,9 @@ class LoomoAudio (applicationContext: Context) {
         Log.i(TAG,"Current Volume: ${mAudio.getStreamVolume(stream)}")
 
         val max = mAudio.getStreamMaxVolume(stream).toDouble()
-        val volume = max*volume.v
+        val newVolume = max*volume.v
         try {
-            mAudio.setStreamVolume(stream,volume.toInt(), AudioManager.FLAG_SHOW_UI)
+            mAudio.setStreamVolume(stream,newVolume.toInt(), AudioManager.FLAG_SHOW_UI)
         }catch (e: Exception) {
             Log.e(TAG, "Audio exception: ", e)
         }

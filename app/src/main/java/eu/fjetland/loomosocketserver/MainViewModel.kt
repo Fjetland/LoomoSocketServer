@@ -1,11 +1,13 @@
 package eu.fjetland.loomosocketserver
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import eu.fjetland.loomosocketserver.connection.IpHelper
 import eu.fjetland.loomosocketserver.data.*
+import eu.fjetland.loomosocketserver.loomo.LoomoHead
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -13,6 +15,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val clientIp = MutableLiveData<String>()
     val readLog =  MutableLiveData<String>()
     private val context = app
+
+    val isConnected = MutableLiveData<Boolean>()
 
     /**
      * Robot operators
@@ -23,15 +27,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val speak = MutableLiveData<Speak?>()
     val volume = MutableLiveData<Volume?>()
     val endableDrive = MutableLiveData<EnableDrive?>()
-    val test = MutableLiveData<Boolean>()
+
 
     init {
-        test.value = false
-
         Log.i(LOG_TAG, "Debug View Model created")
         myIp.value = "Searching for IP..."
         clientIp.value = "Not Connected"
         readLog.value = "Awaiting remote connection..."
+        isConnected.value = false
     }
 
     fun updateMyIp() {

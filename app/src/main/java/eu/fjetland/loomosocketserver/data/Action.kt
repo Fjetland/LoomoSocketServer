@@ -114,7 +114,7 @@ data class EnableDrive( //
 data class Head( //
     var pitch :Float, // Head pitch
     var yaw : Float, // Head Yaw
-    var li : Int = 10, // Head light mode 0-13
+    var li : Int? = null, // Head light mode 0-13
     var mode : Int = Action.HEAD_SET_SMOOTH,
     val act : String = Action.HEAD)
 

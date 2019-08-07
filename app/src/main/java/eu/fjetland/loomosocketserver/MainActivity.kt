@@ -14,6 +14,9 @@ import eu.fjetland.loomosocketserver.loomo.LoomoBase
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
 import eu.fjetland.loomosocketserver.loomo.LoomoRealSense
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 var updateConversationHandler = Handler()
@@ -66,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         })
         viewModel.readLog.observe(this, Observer {
             txtSocketLogg.text = it
+        })
+
+        viewModel.isConnected.observe(this, Observer {
+            loomoHead.setConnectedLight(it)
         })
 
         /**
@@ -136,6 +143,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        loomoHead.setConnectedLight(false)
         socketThread.interrupt()
         Log.i(LOG_TAG, "onDestroy")
         loomoAudio.onDelete()
@@ -143,7 +151,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-
+        loomoRealSense.stopCamera()
         //socketThread.interrupt()
         Log.i(LOG_TAG,"Interupt Socket")
         super.onStop()

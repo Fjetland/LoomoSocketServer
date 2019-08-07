@@ -18,7 +18,7 @@ class LoomoRealSense (context: Context, val viewModel: ViewModel){
     val TAG = "LoomoRealSense"
 
     var mVision : Vision = Vision.getInstance()
-    var isActive = false;
+    var isActive = false
 
     var mImageColor : Bitmap = Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888)
 
@@ -50,6 +50,12 @@ class LoomoRealSense (context: Context, val viewModel: ViewModel){
             //viewModel.test.
 
             Log.i(TAG,"Vision isBound: ${mVision.isBind}")
+        }
+    }
+
+    fun stopCamera(){
+        if (mVision.isBind) {
+            mVision.stopListenFrame(StreamType.COLOR)
         }
     }
 }

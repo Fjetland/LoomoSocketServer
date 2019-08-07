@@ -43,9 +43,9 @@ class Communicator(private val context: Context) : Runnable {
 
                 mainListenerLoop(socket)
 
+                isConnected = false
                 updateClientIp(context.getString(R.string.lost_client_msg))
                 socket.close()
-                isConnected = false
             }
             while (thread.isInterrupted){
                 Thread.sleep(10L)
@@ -100,7 +100,7 @@ class Communicator(private val context: Context) : Runnable {
                     DataResponce.POSE2D -> sendPose2D()
                     DataResponce.HEAD_WORLD -> sendHeadPoseWorld()
                     DataResponce.HEAD_JOINT -> sendHeadPoseJoint()
-                    DataResponce.BASE_POSE -> sendBasePose()
+                    DataResponce.BASE_IMU -> sendBaseImu()
                     DataResponce.BASE_TICK -> sendBaseTick()
                     else -> Log.w(TAG,"Action Not implemented")
                 }
@@ -167,6 +167,7 @@ class Communicator(private val context: Context) : Runnable {
         updateSocketLog("Connected to: $string")
         updateConversationHandler.post {
             viewModel.updateClientIp(string)
+            viewModel.isConnected.value = isConnected
         }
     }
 
@@ -200,8 +201,8 @@ class Communicator(private val context: Context) : Runnable {
         sendString(DataResponce.sensHeadPoseJoint2JSONstring(data))
     }
 
-    private fun sendBasePose() {
-        val data = mSensor.getSensBasePose()
+    private fun sendBaseImu() {
+        val data = mSensor.getSensBaseImu()
         sendString(DataResponce.sensBasePose2JSONstring(data))
     }
 
