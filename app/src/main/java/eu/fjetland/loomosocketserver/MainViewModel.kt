@@ -53,6 +53,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         readLog.value = "ERROR: Socket port dead. Restart!"
     }
 
+
     /**
      * Clear Robot opperators after use
      */

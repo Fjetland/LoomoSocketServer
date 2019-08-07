@@ -4,11 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.widget.ImageView
 
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator
+import eu.fjetland.loomosocketserver.data.EnableDrive
 import eu.fjetland.loomosocketserver.loomo.LoomoAudio
 import eu.fjetland.loomosocketserver.loomo.LoomoBase
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
@@ -38,6 +40,18 @@ class MainActivity : AppCompatActivity() {
     }
     private val txtClientIpDisplay by lazy {
         findViewById<TextView>(R.id.txtClientIpDisplay)
+    }
+
+    private val driveImageView by lazy {
+        findViewById<ImageView>(R.id.driveImageView)
+    }
+
+    private val visionImageView by lazy {
+        findViewById<ImageView>(R.id.visionImageView)
+    }
+
+    private val connectionImageView by lazy {
+        findViewById<ImageView>(R.id.connectionImageView)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.isConnected.observe(this, Observer {
             loomoHead.setConnectedLight(it)
+            updateConnectionIcon(it)
         })
 
         /**
@@ -97,6 +112,8 @@ class MainActivity : AppCompatActivity() {
             if (it != null) {
                 Log.i(TAG, "Action: $it")
                 loomoBase.setEnableDrive(it)
+                updateDriveIcon(it.drive)
+
             }
         })
 
@@ -151,10 +168,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        viewModel.endableDrive.value = EnableDrive(false)
         loomoRealSense.stopCamera()
+
         //socketThread.interrupt()
         Log.i(LOG_TAG,"Interupt Socket")
         super.onStop()
+    }
+
+    fun updateConnectionIcon(boolean: Boolean){
+        if (boolean) {
+            connectionImageView.setImageResource(R.drawable.ic_connection_on)
+        } else {
+            connectionImageView.setImageResource(R.drawable.ic_connection_off)
+        }
+    }
+
+    fun updateDriveIcon(boolean: Boolean) {
+        if (boolean){
+            driveImageView.setImageResource(R.drawable.ic_drive_on)
+        } else {
+            driveImageView.setImageResource(R.drawable.ic_drive_off)
+        }
     }
 
 
