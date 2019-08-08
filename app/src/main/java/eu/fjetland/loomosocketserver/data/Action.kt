@@ -13,6 +13,8 @@ class Action(string: String){
         const val ENABLE_DRIVE = "enableDrive"
         const val ENABLE_DRIVE_VALUE = "value"
 
+        const val ENABLE_VISION = "enableVision" // See Dataresponce for camera labels
+
         const val VELOCITY = "vel"
         const val VELOCITY_ANGULAR = "av"
         const val VELOCITY_LINEAR = "v"
@@ -40,7 +42,7 @@ class Action(string: String){
         const val HEAD_SET_SMOOTH = 0
         const val HEAD_SET_LOCK = 1
 
-        val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, SPEAK, VOLUME, HEAD)
+        val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, SPEAK, VOLUME, HEAD, ENABLE_VISION)
     }
 
     constructor(byteArray: ByteArray) : this(byteArray.toString(charset(ENCODING)))
@@ -109,7 +111,15 @@ class Action(string: String){
         val obj =  if (jsonObject.has(DataResponce.IMAGE_TYPE)) {
                         ImageResponse(jsonObject.getString(DataResponce.IMAGE_TYPE))
         } else ImageResponse()
+        return obj
+    }
 
+    fun json2EenableVision() : EnableVision {
+        val obj = EnableVision(
+            depth = jsonObject.getBoolean(DataResponce.IMAGE_TYPE_DEPTH),
+            color = jsonObject.getBoolean(DataResponce.IMAGE_TYPE_COLOR),
+            colorSmall = jsonObject.getBoolean(DataResponce.IMAGE_TYPE_COLOR_SMALL)
+        )
         return obj
     }
 }
@@ -117,6 +127,13 @@ class Action(string: String){
 data class EnableDrive( //
     val drive : Boolean,
     val act: String = Action.ENABLE_DRIVE
+)
+
+data class EnableVision( //
+    val depth : Boolean,
+    val color : Boolean,
+    val colorSmall : Boolean,
+    val act: String = Action.ENABLE_VISION
 )
 
 data class Head( //

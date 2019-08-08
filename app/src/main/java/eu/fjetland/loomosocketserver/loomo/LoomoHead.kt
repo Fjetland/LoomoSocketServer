@@ -83,4 +83,16 @@ class LoomoHead (context: Context){
             }
         }
     }
+
+    fun setStartupLight(){
+        GlobalScope.launch {
+            while (!mHead.isBind){
+                delay(10L)
+            }
+            setHeadLight(LIGHT_BLUE_SPINN)
+            delay(1200L)
+            setHeadLight(LIGHT_ORANGE_SLOW)
+        }
+    }
+
 }

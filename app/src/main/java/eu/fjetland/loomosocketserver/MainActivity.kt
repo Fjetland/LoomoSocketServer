@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.ContactsContract
 import android.util.Log
+import android.view.View
+import android.widget.ImageButton
 import android.widget.ImageView
 
 import android.widget.TextView
@@ -14,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator
 import eu.fjetland.loomosocketserver.data.EnableDrive
+import eu.fjetland.loomosocketserver.data.EnableVision
 import eu.fjetland.loomosocketserver.loomo.LoomoAudio
 import eu.fjetland.loomosocketserver.loomo.LoomoBase
 import eu.fjetland.loomosocketserver.loomo.LoomoHead
@@ -68,26 +71,41 @@ class MainActivity : AppCompatActivity(){
         findViewById<ImageView>(R.id.viewFinderDepth)
     }
 
+    private val disconnectButton by lazy {
+        findViewById<ImageButton>(R.id.disconnectButton)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.hide()
 
-        loomoAudio.onCreate() // Setup Audio
-        loomoHead = LoomoHead(this)
-        loomoBase = LoomoBase(this)
-
-
-        //lifecycle.addObserver(MyLifecycleObserver())
-
         viewModel = ViewModelProviders.of(this)
             .get(MainViewModel::class.java)
 
+        loomoAudio.onCreate() // Setup Audio
+        loomoHead = LoomoHead(this)
+        loomoBase = LoomoBase(this)
         loomoRealSense = LoomoRealSense(this)
 
+
         /**
-         * Display actions
+         * Button
+         */
+        disconnectButton.setOnClickListener {
+            GlobalScope.launch {
+            socketThread.interrupt()
+            socketThread.join()
+              delay(600L)
+
+            socketThread = Thread(Communicator(this@MainActivity))
+            socketThread.start()
+            }
+        }
+
+        /**
+        * Display actions
          */
         viewModel.myIp.observe(this, Observer {
             txtIpDisplay.text = it
@@ -102,6 +120,8 @@ class MainActivity : AppCompatActivity(){
         viewModel.isConnected.observe(this, Observer {
             loomoHead.setConnectedLight(it)
             updateConnectionIcon(it)
+            if (it) disconnectButton.visibility = ImageButton.VISIBLE
+            else disconnectButton.visibility = ImageButton.GONE
         })
 
         /**
@@ -164,25 +184,16 @@ class MainActivity : AppCompatActivity(){
             updateVisionIcon(it)
         })
 
-
-
-
-        /**
-         * Start Communication thread
-         */
-
-
-        socketThread = Thread(Communicator(this))
-        //socketThread = Thread(MySocket(this))
-
-        socketThread.start()
-
+        viewModel.activeStreams.observe(this, Observer {
+            loomoRealSense.changeInCameraState(it)
+            updateViewFinderVisibility(it)
+        })
     }
 
 
     override fun onDestroy() {
-        loomoHead.setConnectedLight(false)
-        socketThread.interrupt()
+        //loomoHead.setConnectedLight(false)
+        //socketThread.interrupt()
         Log.i(LOG_TAG, "onDestroy")
         loomoAudio.onDelete()
         super.onDestroy()
@@ -192,14 +203,19 @@ class MainActivity : AppCompatActivity(){
 
     override fun onStart() {
         loomoRealSense.startCamera()
+        /**
+         * Start Communication thread
+         */
+        socketThread = Thread(Communicator(this))
+        socketThread.start()
+
         super.onStart()
     }
 
     override fun onStop() {
         loomoRealSense.stopCamera()
-
-        //socketThread.interrupt()
-        Log.i(LOG_TAG,"Interupt Socket")
+        socketThread.interrupt()
+        socketThread.join()
         super.onStop()
     }
 
@@ -207,10 +223,13 @@ class MainActivity : AppCompatActivity(){
         Log.i(LOG_TAG, "onResume")
         viewModel.updateMyIp()
         super.onResume()
+
+        loomoHead.setStartupLight()
     }
 
     override fun onPause() {
         viewModel.endableDrive.value = EnableDrive(false)
+        loomoHead.setHeadLight(LoomoHead.LIGHT_RED_FIVE_PULSES)
         super.onPause()
     }
 
@@ -235,6 +254,20 @@ class MainActivity : AppCompatActivity(){
             visionImageView.setImageResource(R.drawable.ic_camera_on)
         } else {
             visionImageView.setImageResource(R.drawable.ic_camera_off)
+        }
+    }
+
+    fun updateViewFinderVisibility(enableVision: EnableVision){
+        if (enableVision.color || enableVision.colorSmall) {
+            viewFinder.visibility  = ImageView.VISIBLE
+        } else {
+            viewFinder.visibility  = ImageView.GONE
+        }
+
+        if (enableVision.depth) {
+            viewFinderDepth.visibility  = ImageView.VISIBLE
+        } else {
+            viewFinderDepth.visibility  = ImageView.GONE
         }
     }
 

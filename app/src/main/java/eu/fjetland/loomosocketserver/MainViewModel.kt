@@ -28,6 +28,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val endableDrive = MutableLiveData<EnableDrive?>()
 
     val visionIsActive = MutableLiveData<Boolean>()
+    val activeStreams = MutableLiveData<EnableVision>()
 
     val realSenseColorImage = MutableLiveData<Bitmap>()
     val realSenseDepthImage = MutableLiveData<Bitmap>()
@@ -49,7 +50,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         colorLargeBitArray.value = byteArrayOf(0,0)
         colorSmallBitArray.value = byteArrayOf(0,0)
         colorDepthBitArray.value = byteArrayOf(0,0)
+
         visionIsActive.value = false
+        activeStreams.value = EnableVision(false,false,false)
     }
 
     fun updateMyIp() {

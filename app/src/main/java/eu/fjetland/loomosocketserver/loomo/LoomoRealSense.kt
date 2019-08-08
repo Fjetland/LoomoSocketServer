@@ -7,6 +7,7 @@ import com.segway.robot.sdk.base.bind.ServiceBinder
 import com.segway.robot.sdk.vision.Vision
 import com.segway.robot.sdk.vision.frame.Frame
 import com.segway.robot.sdk.vision.stream.StreamType
+import eu.fjetland.loomosocketserver.data.EnableVision
 import eu.fjetland.loomosocketserver.updateConversationHandler
 import eu.fjetland.loomosocketserver.viewModel
 import kotlinx.coroutines.*
@@ -24,11 +25,14 @@ class LoomoRealSense(context: Context) {
         const val DEPTH_HEIGHT = 240
     }
 
-
     val TAG = "LoomoRealSense"
 
     var mVision: Vision = Vision.getInstance()
     var isActive = false
+
+    var colorActive = false
+    var colorSmallActive = false
+    var depthActive = false
 
     var mImageColor: Bitmap = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888)
     var mImageDepth: Bitmap = Bitmap.createBitmap(320, 240, Bitmap.Config.RGB_565)
@@ -38,57 +42,62 @@ class LoomoRealSense(context: Context) {
             override fun onBind() {
                 Log.d(TAG, "Vision onBind")
             }
-
             override fun onUnbind(reason: String?) {
             }
         })
-
-        //val infos : Array<out StreamInfo>? = mVision.activatedStreamInfo
         Log.i(TAG, "Vision isBound: ${mVision.isBind}")
     }
 
     fun startCamera() {
+        if (colorActive || colorSmallActive || depthActive) {
+            GlobalScope.launch {
+                // launch a new coroutine in background and continue
 
-        GlobalScope.launch {
-            // launch a new coroutine in background and continue
-            while (!mVision.isBind) {
-                delay(10L) // non-blocking delay for 1 second (default time unit is ms)
-            }
-
-            mVision.startListenFrame(StreamType.COLOR, object : Vision.FrameListener {
-                override fun onNewFrame(streamType: Int, frame: Frame) {
-                    mImageColor.copyPixelsFromBuffer(frame.byteBuffer)
-                    val colorMapLarge = colorLarge2ByteArray(mImageColor)
-                    val colorMapSmall = colorSmall2ByteArray(mImageColor)
-
-                    updateConversationHandler.post {
-                        viewModel.realSenseColorImage.value = mImageColor
-                        viewModel.colorLargeBitArray.value = colorMapLarge
-                        viewModel.colorSmallBitArray.value = colorMapSmall
-                    }
+                if (colorActive || colorSmallActive) startColorCamera()
+                if (depthActive) startDepthCamera()
+                updateConversationHandler.post {
+                    viewModel.visionIsActive.value = true
                 }
-            })
-
-            mVision.startListenFrame(StreamType.DEPTH, object : Vision.FrameListener {
-                override fun onNewFrame(streamType: Int, frame: Frame) {
-                    mImageDepth.copyPixelsFromBuffer(frame.byteBuffer)
-                    val grayImage = depth2Grey2(mImageDepth)
-                    val depthBytes = depth2bnyteArray(mImageDepth)
-
-                    updateConversationHandler.post {
-                        viewModel.realSenseDepthImage.value = grayImage
-                        viewModel.colorDepthBitArray.value = depthBytes
-                    }
-                }
-            })
-
-            updateConversationHandler.post {
-                viewModel.visionIsActive.value = true
+                this@LoomoRealSense.isActive = true
+                Log.i(TAG, "Vision isBound: ${mVision.isBind}")
             }
-
-            this@LoomoRealSense.isActive = true
-            Log.i(TAG, "Vision isBound: ${mVision.isBind}")
         }
+    }
+
+    suspend fun startColorCamera() {
+        while (!mVision.isBind) {
+            delay(10L) // non-blocking delay for 1 second (default time unit is ms)
+        }
+        mVision.startListenFrame(StreamType.COLOR, object : Vision.FrameListener {
+            override fun onNewFrame(streamType: Int, frame: Frame) {
+                mImageColor.copyPixelsFromBuffer(frame.byteBuffer)
+                val colorMapLarge = colorLarge2ByteArray(mImageColor)
+                val colorMapSmall = colorSmall2ByteArray(mImageColor)
+
+                updateConversationHandler.post {
+                    viewModel.realSenseColorImage.value = mImageColor
+                    if (colorActive) viewModel.colorLargeBitArray.value = colorMapLarge
+                    if (colorSmallActive) viewModel.colorSmallBitArray.value = colorMapSmall
+                }
+            }
+        })
+    }
+
+    suspend fun startDepthCamera(){
+        while (!mVision.isBind) {
+            delay(10L) // non-blocking delay for 1 second (default time unit is ms)
+        }
+        mVision.startListenFrame(StreamType.DEPTH, object : Vision.FrameListener {
+            override fun onNewFrame(streamType: Int, frame: Frame) {
+                mImageDepth.copyPixelsFromBuffer(frame.byteBuffer)
+                val grayImage = depth2Grey2(mImageDepth)
+                val depthBytes = depth2bnyteArray(mImageDepth)
+                updateConversationHandler.post {
+                    viewModel.realSenseDepthImage.value = grayImage
+                    viewModel.colorDepthBitArray.value = depthBytes
+                }
+            }
+        })
     }
 
     fun stopCamera() {
@@ -100,6 +109,24 @@ class LoomoRealSense(context: Context) {
             }
         }
     }
+
+    fun changeInCameraState(enableVision: EnableVision) {
+        val newColor = enableVision.color != colorActive || enableVision.colorSmall != colorSmallActive
+        val newDepth = enableVision.depth != depthActive
+
+        if (newColor || newDepth) {
+            colorActive = enableVision.color
+            colorSmallActive = enableVision.colorSmall
+            depthActive = enableVision.depth
+            stopCamera()
+            startCamera()
+            Log.i(TAG, "Change in camera state: $enableVision")
+        }
+    }
+
+    /**
+     *  Picture mapping functions
+     */
 
     private fun depth2Grey(img: Bitmap): Bitmap {
         val width = img.width
