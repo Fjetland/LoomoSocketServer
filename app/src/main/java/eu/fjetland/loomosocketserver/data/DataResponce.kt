@@ -1,5 +1,6 @@
 package eu.fjetland.loomosocketserver.data
 
+import eu.fjetland.loomosocketserver.loomo.LoomoRealSense
 import org.json.JSONObject
 
 class DataResponce {
@@ -9,6 +10,16 @@ class DataResponce {
         const val TIME_LBL = "time"
 
         const val IMAGE = "img"
+        const val IMAGE_TYPE = "type"
+        const val IMAGE_TYPE_COLOR = "Color"
+        const val IMAGE_TYPE_COLOR_SMALL = "ColorSmall"
+        const val IMAGE_TYPE_DEPTH = "Depth"
+
+        const val IMAGE_SIZE = "size"
+        const val IMAGE_WIDTH = "width"
+        const val IMAGE_HEIGHT = "height"
+
+
 
 
         const val SURROUNDINGS = "sSur"
@@ -116,18 +127,13 @@ class DataResponce {
             return json.toString()
         }
 
-        fun sensImage2JSONstring(data: ImageResponce) : String{
+        fun sensImage2JSONstring(data: ImageResponse) : String{
             val json = JSONObject()
             json.put(DATA_LBL, IMAGE)
-            json.put("size", data.size)
-
-            return json.toString()
-        }
-        fun sensImage2JSONstring(size : Int): String{
-            val json = JSONObject()
-            json.put(DATA_LBL, IMAGE)
-            json.put("size", size)
-
+            json.put(IMAGE_SIZE, data.size)
+            json.put(IMAGE_TYPE, data.type)
+            json.put(IMAGE_WIDTH, data.width)
+            json.put(IMAGE_HEIGHT, data.height)
             return json.toString()
         }
 
@@ -182,7 +188,20 @@ data class SensPose2D(
     val label : String = DataResponce.POSE2D
 )
 
-data class ImageResponce(
-    val size : Int,
+data class ImageResponse(
+    var type : String = DataResponce.IMAGE_TYPE_COLOR_SMALL,
+    var size : Int = 0,
+    var width : Int = 0,
+    var height : Int = 0,
     val label : String = DataResponce.IMAGE
-)
+) {
+    init {
+        if (type == DataResponce.IMAGE_TYPE_COLOR) {
+            width = LoomoRealSense.COLOR_WIDTH
+            height = LoomoRealSense.COLOR_HEIGHT
+        } else {
+            width = LoomoRealSense.SMALL_COLOR_WIDTH
+            height = LoomoRealSense.SMALL_COLOR_HEIGHT
+        }
+    }
+}

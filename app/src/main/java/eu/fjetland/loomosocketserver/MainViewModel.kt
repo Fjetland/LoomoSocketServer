@@ -7,8 +7,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import eu.fjetland.loomosocketserver.connection.IpHelper
 import eu.fjetland.loomosocketserver.data.*
-import eu.fjetland.loomosocketserver.loomo.LoomoHead
-import java.nio.ByteBuffer
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -34,7 +32,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val realSenseColorImage = MutableLiveData<Bitmap>()
     val realSenseDepthImage = MutableLiveData<Bitmap>()
 
-    val colorBitArray = MutableLiveData<ByteArray>()
+    val colorLargeBitArray = MutableLiveData<ByteArray>()
+    val colorSmallBitArray = MutableLiveData<ByteArray>()
+    val colorDepthBitArray = MutableLiveData<ByteArray>()
 
 
 
@@ -46,7 +46,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         isConnected.value = false
         realSenseColorImage.value = Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888)
         realSenseDepthImage.value = Bitmap.createBitmap(320,240,Bitmap.Config.RGB_565)
-        colorBitArray.value = byteArrayOf(0,0)
+        colorLargeBitArray.value = byteArrayOf(0,0)
+        colorSmallBitArray.value = byteArrayOf(0,0)
+        colorDepthBitArray.value = byteArrayOf(0,0)
         visionIsActive.value = false
     }
 

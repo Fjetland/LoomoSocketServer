@@ -102,7 +102,7 @@ class Communicator(private val context: Context) : Runnable {
                     DataResponce.HEAD_JOINT -> sendHeadPoseJoint()
                     DataResponce.BASE_IMU -> sendBaseImu()
                     DataResponce.BASE_TICK -> sendBaseTick()
-                    DataResponce.IMAGE -> sendImage()
+                    DataResponce.IMAGE -> sendImage(action.json2imageResponce())
                     else -> Log.w(TAG,"Action Not implemented")
                 }
             } else {
@@ -217,11 +217,41 @@ class Communicator(private val context: Context) : Runnable {
         sendString(DataResponce.sensPose2D2JSONstring(data))
     }
 
-    private fun sendImage() {
-        val meta = ImageResponce(viewModel.colorBitArray.value?.size ?: 0)
-        sendString(DataResponce.sensImage2JSONstring(meta))
+    private fun sendImage(meta : ImageResponse) {
 
-        sendBytes(viewModel.colorBitArray.value ?: byteArrayOf(0,0,0))
+        when (meta.type) {
+            DataResponce.IMAGE_TYPE_COLOR_SMALL ->{
+                meta.size = viewModel.colorSmallBitArray.value?.size ?: 1
+
+                Log.i(TAG,"Sending small color image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorSmallBitArray.value ?: byteArrayOf(0))
+            }
+            DataResponce.IMAGE_TYPE_COLOR -> {
+
+                meta.size = viewModel.colorLargeBitArray.value?.size ?: 1
+                Log.i(TAG,"Sending full color image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorLargeBitArray.value ?: byteArrayOf(0))
+            }
+            DataResponce.IMAGE_TYPE_DEPTH -> {
+                meta.size = viewModel.colorDepthBitArray.value?.size ?: 1
+                Log.i(TAG,"Sending depth image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorDepthBitArray.value ?: byteArrayOf(0))
+            }
+            else -> {
+                Log.i(TAG,"Unknown Image")
+                meta.type = "Unknown"
+                meta.size = 1
+                meta.width = 1
+                meta.height = 1
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(byteArrayOf(0))
+            }
+        }
+
+
     }
 
     /**

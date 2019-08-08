@@ -48,6 +48,7 @@ class LoomoBase(context: Context) {
     fun setEnableDrive(enableDrive: EnableDrive) {
         drive = enableDrive.drive
         if (!drive) {
+            Log.i(TAG, "Control mode set to raw | driveEnabled: $drive")
             mBase.controlMode = Base.CONTROL_MODE_RAW
             isDrivingOnCheckPoints = false
         }

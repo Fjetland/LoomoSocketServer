@@ -179,13 +179,6 @@ class MainActivity : AppCompatActivity(){
 
     }
 
-    override fun onResume() {
-        Log.i(LOG_TAG, "onResume")
-        viewModel.updateMyIp()
-        super.onResume()
-
-        loomoRealSense.startCamera()
-    }
 
     override fun onDestroy() {
         loomoHead.setConnectedLight(false)
@@ -195,13 +188,30 @@ class MainActivity : AppCompatActivity(){
         super.onDestroy()
     }
 
+
+
+    override fun onStart() {
+        loomoRealSense.startCamera()
+        super.onStart()
+    }
+
     override fun onStop() {
-        viewModel.endableDrive.value = EnableDrive(false)
         loomoRealSense.stopCamera()
 
         //socketThread.interrupt()
         Log.i(LOG_TAG,"Interupt Socket")
         super.onStop()
+    }
+
+    override fun onResume() {
+        Log.i(LOG_TAG, "onResume")
+        viewModel.updateMyIp()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        viewModel.endableDrive.value = EnableDrive(false)
+        super.onPause()
     }
 
     fun updateConnectionIcon(boolean: Boolean){

@@ -104,6 +104,14 @@ class Action(string: String){
     fun json2enableDrive() : EnableDrive {
         return EnableDrive(jsonObject.getBoolean(ENABLE_DRIVE_VALUE))
     }
+
+    fun json2imageResponce() : ImageResponse {
+        val obj =  if (jsonObject.has(DataResponce.IMAGE_TYPE)) {
+                        ImageResponse(jsonObject.getString(DataResponce.IMAGE_TYPE))
+        } else ImageResponse()
+
+        return obj
+    }
 }
 
 data class EnableDrive( //
