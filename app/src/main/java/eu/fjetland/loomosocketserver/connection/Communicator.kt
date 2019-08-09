@@ -5,10 +5,13 @@ import android.util.Log
 import eu.fjetland.loomosocketserver.*
 import eu.fjetland.loomosocketserver.data.*
 import eu.fjetland.loomosocketserver.loomo.LoomoSensor
+import kotlinx.coroutines.delay
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
+import java.net.SocketTimeoutException
 
 class Communicator(private val context: Context) : Runnable {
     private val TAG = "Communicator"
@@ -36,20 +39,24 @@ class Communicator(private val context: Context) : Runnable {
          * Run TCP socket server
          */
         serverSocket = ServerSocket(SOCKET_PORT)
-        while (!shutDownSocket){
-            val socket = connect2client()
-            if (socket != null){
-                updateClientIp(socket.remoteSocketAddress.toString())
+        serverSocket.soTimeout = 500
+        while (!thread.isInterrupted){
+            try {
+                val socket = connect2client()
+                if (socket != null){
+                    updateClientIp(socket.remoteSocketAddress.toString())
 
-                mainListenerLoop(socket)
+                    mainListenerLoop(socket)
 
-                isConnected = false
-                updateClientIp(context.getString(R.string.lost_client_msg))
-                socket.close()
+                    isConnected = false
+                    updateEnableDrive(EnableDrive(false))
+                    updateClientIp(context.getString(R.string.lost_client_msg))
+                    socket.close()
+                }
+            } catch (e : Exception) {
+
             }
-            while (thread.isInterrupted){
-                Thread.sleep(10L)
-            }
+
         }
 
         try {
@@ -57,6 +64,7 @@ class Communicator(private val context: Context) : Runnable {
         } catch (e: Exception) {
             Log.e(TAG, "Ending exeption: ", e)
         }
+        Log.i(TAG, "Communication thread shutting down!")
     }
 
 
@@ -64,19 +72,31 @@ class Communicator(private val context: Context) : Runnable {
      * Listen for TCP messages and reply
      */
     private fun mainListenerLoop(socket: Socket) {
+        socket.soTimeout = 500
         input = socket.getInputStream()
         output = socket.getOutputStream()
         Log.d(TAG, "Main Listener is active")
-
         while (!thread.isInterrupted and isConnected and !shutDownSocket) {
-            val read = input.read()
-            when {
-                //read == 1 -> readResponseID()
-                read>1 -> readAction(read) // JsonString Incomming
-                read == -1 -> isConnected = false // Connection is lost
-                else -> {
-                    Log.i(TAG, "Unexpected initial read bit value: $read")
-                    Thread.sleep(10)}
+//            while (input.available() <1) {
+//
+//            }
+            if (thread.isInterrupted) {
+                Log.i(TAG, "Thread is interrupted at MainListener")
+                isConnected = false
+                return
+            }
+            try {
+                val read = input.read()
+                Log.i(TAG, "Read bit value: $read")
+                when {
+                    //read == 1 -> readResponseID()
+                    read>1 -> readAction(read) // JsonString Incoming
+                    read == -1 -> isConnected = false // Connection is lost
+                    else -> {
+                        Log.i(TAG, "Unexpected initial read bit value: $read")
+                        }
+                }
+            } catch (e : SocketTimeoutException) {
             }
         }
     }
@@ -91,6 +111,7 @@ class Communicator(private val context: Context) : Runnable {
                 when (action.actionType) { // Decide responce
                     Action.HEAD -> updateHead(action.json2head())
                     Action.ENABLE_DRIVE -> updateEnableDrive(action.json2enableDrive())
+                    Action.ENABLE_VISION -> updateEnableVision(action.json2EenableVision())
                     Action.VELOCITY -> updateVelocity(action.json2velocity())
                     Action.POSITION -> updatePosition(action.json2position())
                     Action.SPEAK -> updateSpeak(action.json2speak())
@@ -102,6 +123,7 @@ class Communicator(private val context: Context) : Runnable {
                     DataResponce.HEAD_JOINT -> sendHeadPoseJoint()
                     DataResponce.BASE_IMU -> sendBaseImu()
                     DataResponce.BASE_TICK -> sendBaseTick()
+                    DataResponce.IMAGE -> sendImage(action.json2imageResponce())
                     else -> Log.w(TAG,"Action Not implemented")
                 }
             } else {
@@ -114,12 +136,17 @@ class Communicator(private val context: Context) : Runnable {
     }
 
     private fun connect2client() : Socket?{
-        Log.i(TAG, "Awaiting connection from client")
+        //Log.i(TAG, "Awaiting connection from client")
         var socket : Socket? = null
-        while (!thread.isInterrupted and !isConnected and !shutDownSocket) {
-            Log.i(TAG, "Connection from client")
-           socket = serverSocket.accept()
-           isConnected = socket.isConnected
+        while (!thread.isInterrupted and !isConnected) {
+            try {
+                socket = serverSocket.accept()
+                isConnected = socket.isConnected
+            } catch (e : SocketTimeoutException) {
+
+            }
+
+           //isConnected =
         }
         return socket
     }
@@ -130,6 +157,12 @@ class Communicator(private val context: Context) : Runnable {
     private fun updateHead(head: Head) {
         updateConversationHandler.post {
             viewModel.head.value = head
+        }
+    }
+
+    private fun updateEnableVision(enableVision: EnableVision) {
+        updateConversationHandler.post {
+            viewModel.activeStreams.value = enableVision
         }
     }
 
@@ -214,6 +247,41 @@ class Communicator(private val context: Context) : Runnable {
     private fun sendPose2D() {
         val data = mSensor.getSensPose2D()
         sendString(DataResponce.sensPose2D2JSONstring(data))
+    }
+
+    private fun sendImage(meta : ImageResponse) {
+
+        when (meta.type) {
+            DataResponce.IMAGE_TYPE_COLOR_SMALL ->{
+                meta.size = viewModel.colorSmallBitArray.value?.size ?: 1
+
+                Log.i(TAG,"Sending small color image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorSmallBitArray.value ?: byteArrayOf(0))
+            }
+            DataResponce.IMAGE_TYPE_COLOR -> {
+
+                meta.size = viewModel.colorLargeBitArray.value?.size ?: 1
+                Log.i(TAG,"Sending full color image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorLargeBitArray.value ?: byteArrayOf(0))
+            }
+            DataResponce.IMAGE_TYPE_DEPTH -> {
+                meta.size = viewModel.colorDepthBitArray.value?.size ?: 1
+                Log.i(TAG,"Sending depth image of ${meta.size} bytes")
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(viewModel.colorDepthBitArray.value ?: byteArrayOf(0))
+            }
+            else -> {
+                Log.i(TAG,"Unknown Image")
+                meta.type = "Unknown"
+                meta.size = 1
+                meta.width = 1
+                meta.height = 1
+                sendString(DataResponce.sensImage2JSONstring(meta))
+                sendBytes(byteArrayOf(0))
+            }
+        }
     }
 
     /**

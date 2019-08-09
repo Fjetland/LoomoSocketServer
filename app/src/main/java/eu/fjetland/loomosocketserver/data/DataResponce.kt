@@ -1,5 +1,6 @@
 package eu.fjetland.loomosocketserver.data
 
+import eu.fjetland.loomosocketserver.loomo.LoomoRealSense
 import org.json.JSONObject
 
 class DataResponce {
@@ -7,6 +8,18 @@ class DataResponce {
         // Data returns
         const val DATA_LBL = "dat"
         const val TIME_LBL = "time"
+
+        const val IMAGE = "img"
+        const val IMAGE_TYPE = "type"
+        const val IMAGE_TYPE_COLOR = "Color"
+        const val IMAGE_TYPE_COLOR_SMALL = "ColorSmall"
+        const val IMAGE_TYPE_DEPTH = "Depth"
+
+        const val IMAGE_SIZE = "size"
+        const val IMAGE_WIDTH = "width"
+        const val IMAGE_HEIGHT = "height"
+
+
 
 
         const val SURROUNDINGS = "sSur"
@@ -41,78 +54,88 @@ class DataResponce {
         const val BASE_TICK_R = "r"
 
         val DATALIST = listOf(SURROUNDINGS, WHEEL_SPEED, POSE2D,
-                                HEAD_WORLD, HEAD_JOINT, BASE_IMU, BASE_TICK)
+                                HEAD_WORLD, HEAD_JOINT, BASE_IMU, BASE_TICK, IMAGE)
 
 
 
-    fun sensSurroundings2JSONstring(data: SensSurroundings) : String{
-        val json = JSONObject()
-        json.put(DATA_LBL, data.label)
-        json.put(SURROUNDINGS_IRLEFT, data.IR_Left)
-        json.put(SURROUNDINGS_IRRIGHT, data.IR_Right)
-        json.put(SURROUNDINGS_ULTRASONIC, data.UltraSonic)
-        return json.toString()
-    }
+        fun sensSurroundings2JSONstring(data: SensSurroundings) : String{
+            val json = JSONObject()
+            json.put(DATA_LBL, data.label)
+            json.put(SURROUNDINGS_IRLEFT, data.IR_Left)
+            json.put(SURROUNDINGS_IRRIGHT, data.IR_Right)
+            json.put(SURROUNDINGS_ULTRASONIC, data.UltraSonic)
+            return json.toString()
+        }
 
-    fun sensWheelSpeed2JSONstring(data : SensWheelSpeed) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, data.label)
-        json.put(WHEEL_SPEED_L, data.SpeedLeft)
-        json.put(WHEEL_SPEED_R, data.SpeedRight)
+        fun sensWheelSpeed2JSONstring(data : SensWheelSpeed) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, data.label)
+            json.put(WHEEL_SPEED_L, data.SpeedLeft)
+            json.put(WHEEL_SPEED_R, data.SpeedRight)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
 
-    fun sensHeadPoseWorld2JSONstring(data: SensHeadPoseWorld) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, HEAD_WORLD)
-        json.put(HEAD_PITCH, data.pitch)
-        json.put(HEAD_ROLL, data.roll)
-        json.put(HEAD_YAW, data.yaw)
+        fun sensHeadPoseWorld2JSONstring(data: SensHeadPoseWorld) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, HEAD_WORLD)
+            json.put(HEAD_PITCH, data.pitch)
+            json.put(HEAD_ROLL, data.roll)
+            json.put(HEAD_YAW, data.yaw)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
 
-    fun sensHeadPoseJoint2JSONstring(data: SensHeadPoseJoint) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, HEAD_JOINT)
-        json.put(HEAD_PITCH, data.pitch)
-        json.put(HEAD_ROLL, data.roll)
-        json.put(HEAD_YAW, data.yaw)
+        fun sensHeadPoseJoint2JSONstring(data: SensHeadPoseJoint) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, HEAD_JOINT)
+            json.put(HEAD_PITCH, data.pitch)
+            json.put(HEAD_ROLL, data.roll)
+            json.put(HEAD_YAW, data.yaw)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
 
-    fun sensBasePose2JSONstring(data : SensBaseImu) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, BASE_IMU)
-        json.put(BASE_IMU_PITCH, data.pitch)
-        json.put(BASE_IMU_ROLL, data.roll)
-        json.put(BASE_IMU_YAW, data.yaw)
+        fun sensBasePose2JSONstring(data : SensBaseImu) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, BASE_IMU)
+            json.put(BASE_IMU_PITCH, data.pitch)
+            json.put(BASE_IMU_ROLL, data.roll)
+            json.put(BASE_IMU_YAW, data.yaw)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
 
-    fun sensBaseTick2JSONstring(data : SensBaseTick) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, BASE_TICK)
-        json.put(BASE_TICK_L, data.left)
-        json.put(BASE_TICK_R, data.right)
+        fun sensBaseTick2JSONstring(data : SensBaseTick) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, BASE_TICK)
+            json.put(BASE_TICK_L, data.left)
+            json.put(BASE_TICK_R, data.right)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
 
-    fun sensPose2D2JSONstring(data : SensPose2D) : String {
-        val json = JSONObject()
-        json.put(DATA_LBL, POSE2D)
-        json.put(POSE2D_X, data.x)
-        json.put(POSE2D_Y, data.y)
-        json.put(POSE2D_TH, data.theta)
-        json.put(POSE2D_VL, data.linearVelocity)
-        json.put(POSE2D_VA, data.angularVelocity)
+        fun sensPose2D2JSONstring(data : SensPose2D) : String {
+            val json = JSONObject()
+            json.put(DATA_LBL, POSE2D)
+            json.put(POSE2D_X, data.x)
+            json.put(POSE2D_Y, data.y)
+            json.put(POSE2D_TH, data.theta)
+            json.put(POSE2D_VL, data.linearVelocity)
+            json.put(POSE2D_VA, data.angularVelocity)
 
-        return json.toString()
-    }
+            return json.toString()
+        }
+
+        fun sensImage2JSONstring(data: ImageResponse) : String{
+            val json = JSONObject()
+            json.put(DATA_LBL, IMAGE)
+            json.put(IMAGE_SIZE, data.size)
+            json.put(IMAGE_TYPE, data.type)
+            json.put(IMAGE_WIDTH, data.width)
+            json.put(IMAGE_HEIGHT, data.height)
+            return json.toString()
+        }
 
     }
 }
@@ -164,3 +187,21 @@ data class SensPose2D(
     val angularVelocity: Float,
     val label : String = DataResponce.POSE2D
 )
+
+data class ImageResponse(
+    var type : String = DataResponce.IMAGE_TYPE_COLOR_SMALL,
+    var size : Int = 0,
+    var width : Int = 0,
+    var height : Int = 0,
+    val label : String = DataResponce.IMAGE
+) {
+    init {
+        if (type == DataResponce.IMAGE_TYPE_COLOR) {
+            width = LoomoRealSense.COLOR_WIDTH
+            height = LoomoRealSense.COLOR_HEIGHT
+        } else {
+            width = LoomoRealSense.SMALL_COLOR_WIDTH
+            height = LoomoRealSense.SMALL_COLOR_HEIGHT
+        }
+    }
+}

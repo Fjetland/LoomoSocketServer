@@ -61,12 +61,13 @@
             android:focusable="false"
             android:cursorVisible="false"
             tools:ignore="Autofill"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="4dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintEnd_toStartOf="@+id/connectionImageView"/>
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/connectionImageView"
+            android:layout_marginEnd="4dp"/>
 
     <EditText
             android:layout_width="0dp"
@@ -79,12 +80,13 @@
             android:cursorVisible="false"
             android:hint="@string/ip_cli_Placeholder"
             tools:ignore="Autofill"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/connectionImageView"
-            android:layout_marginStart="16dp"/>
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/disconnectButton"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"/>
 
     <TextView
             android:text="@string/ip_cli_lbl"
@@ -105,9 +107,13 @@
             android:id="@+id/connectionImageView"
             app:layout_constraintTop_toTopOf="@+id/txtIpDisplay"
             app:layout_constraintBottom_toBottomOf="@+id/txtIpDisplay"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription"
+            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/txtIpDisplay"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/txtClientIpDisplay"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"/>
 
     <LinearLayout
             android:orientation="horizontal"
@@ -124,7 +130,21 @@
             android:gravity="center"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            android:id="@+id/linearLayout">
+            android:id="@+id/linearLayout"
+            >
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:layout_width="170dp"
+                    android:layout_height="110dp"
+                    tools:srcCompat="@tools:sample/avatars[0]"
+                    android:id="@+id/viewFinderDepth"
+                    android:layout_weight="1"/>
+        </LinearLayout>
 
         <LinearLayout
                 android:orientation="vertical"
@@ -172,13 +192,27 @@
                     android:id="@+id/visionTextView"
                     style="@style/icon_name_style"/>
         </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:layout_width="170dp"
+                    android:layout_height="110dp"
+                    tools:srcCompat="@tools:sample/avatars[0]"
+                    android:id="@+id/viewFinder"
+                    android:layout_weight="1"/>
+        </LinearLayout>
+
     </LinearLayout>
 
     <ImageView
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:srcCompat="@drawable/ic_uiafaceng"
-            android:id="@+id/imageView10"
+            android:id="@+id/logoImageView"
             app:layout_constraintEnd_toStartOf="@+id/scrollView2"
             android:layout_marginEnd="16dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -188,5 +222,18 @@
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout"
             tools:ignore="ContentDescription"/>
+
+    <ImageButton
+            android:layout_width="54dp"
+            android:layout_height="37dp"
+            app:srcCompat="@android:drawable/ic_delete"
+            android:id="@+id/disconnectButton"
+            app:layout_constraintStart_toEndOf="@+id/txtClientIpDisplay"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintBottom_toTopOf="@+id/txtClientIp"
+            android:layout_marginBottom="3dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
