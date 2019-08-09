@@ -1,17 +1,12 @@
 package eu.fjetland.loomosocketserver
 
-import android.hardware.camera2.CameraDevice
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.provider.ContactsContract
 import android.util.Log
-import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-
 import android.widget.TextView
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import eu.fjetland.loomosocketserver.connection.Communicator

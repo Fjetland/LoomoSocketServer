@@ -1,6 +1,5 @@
 package eu.fjetland.loomosocketserver.loomo
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.segway.robot.sdk.base.bind.ServiceBinder
@@ -51,8 +50,8 @@ class LoomoHead (context: Context){
     fun setHead(head: myHead) {
         if (head.mode == Action.HEAD_SET_SMOOTH) {
             mHead.mode = Head.MODE_SMOOTH_TACKING
-            mHead.setWorldYaw(head.pitch)
-            mHead.setWorldPitch(head.yaw)
+            mHead.setWorldYaw(head.yaw)
+            mHead.setWorldPitch(head.pitch)
         } else {
             mHead.mode = Head.MODE_ORIENTATION_LOCK
             mHead.setYawAngularVelocity(head.yaw)
