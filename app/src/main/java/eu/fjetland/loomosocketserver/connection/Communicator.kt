@@ -6,6 +6,8 @@ import eu.fjetland.loomosocketserver.*
 import eu.fjetland.loomosocketserver.data.*
 import eu.fjetland.loomosocketserver.loomo.LoomoSensor
 import kotlinx.coroutines.delay
+import java.io.BufferedInputStream
+import java.io.DataInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
@@ -77,25 +79,37 @@ class Communicator(private val context: Context) : Runnable {
         output = socket.getOutputStream()
         Log.d(TAG, "Main Listener is active")
         while (!thread.isInterrupted and isConnected and !shutDownSocket) {
-//            while (input.available() <1) {
-//
-//            }
             if (thread.isInterrupted) {
                 Log.i(TAG, "Thread is interrupted at MainListener")
                 isConnected = false
                 return
             }
             try {
-                val read = input.read()
-                Log.i(TAG, "Read bit value: $read")
-                when {
-                    //read == 1 -> readResponseID()
-                    read>1 -> readAction(read) // JsonString Incoming
-                    read == -1 -> isConnected = false // Connection is lost
-                    else -> {
-                        Log.i(TAG, "Unexpected initial read bit value: $read")
-                        }
+                //val read = readInitialNumber()
+                var read = input.read()
+                if (read >= 0){
+                    val r2 = input.read()
+//                        Log.i(TAG, "b1 = ${read} b2 = ${r2}")
+                    read = read shl 8 or r2
+//                        Log.i(TAG, "Bytes to read = ${read} ")
+                    if (read > 1) readAction(read)
+                } else {
+                    isConnected = false // Connection is lost
                 }
+
+//                when {
+//                    //read == 1 -> readResponseID()
+//                    //read>1 -> readAction(read) // JsonString Incoming
+//
+//                    else -> {
+//                        val r2 = input.read()
+////                        Log.i(TAG, "b1 = ${read} b2 = ${r2}")
+//                        read = read shl 8 or r2
+////                        Log.i(TAG, "Bytes to read = ${read} ")
+//                        if (read > 1) readAction(read)
+//                        //Log.i(TAG, "Unexpected initial read bit value: $read")
+//                        }
+//                }
             } catch (e : SocketTimeoutException) {
             }
         }
@@ -106,14 +120,20 @@ class Communicator(private val context: Context) : Runnable {
             /**
              * Read and translate actions here
              */
+//            val rb = readBytes(bytes)
+//            Log.i(TAG,"ReadByteLength ${rb.size}")
+//            val last = rb[rb.size-1].toInt()
+//            Log.i(TAG,"Last byte $last")
             val action = Action(readBytes(bytes)) // Read and phrase JSON
             if (action.actionType in Action.ACTIONLIST || action.actionType in DataResponce.DATALIST){ // Check if known action
                 when (action.actionType) { // Decide responce
+                    //Action.SEQUENCE -> runSequence(action)
                     Action.HEAD -> updateHead(action.json2head())
                     Action.ENABLE_DRIVE -> updateEnableDrive(action.json2enableDrive())
                     Action.ENABLE_VISION -> updateEnableVision(action.json2EenableVision())
                     Action.VELOCITY -> updateVelocity(action.json2velocity())
                     Action.POSITION -> updatePosition(action.json2position())
+                    Action.POSITION_ARRAY -> updatePositionArray(action.json2positionArray())
                     Action.SPEAK -> updateSpeak(action.json2speak())
                     Action.VOLUME ->  updateVolume(action.json2volume())
                     DataResponce.SURROUNDINGS -> sendSurroundings()
@@ -135,6 +155,7 @@ class Communicator(private val context: Context) : Runnable {
 
     }
 
+
     private fun connect2client() : Socket?{
         //Log.i(TAG, "Awaiting connection from client")
         var socket : Socket? = null
@@ -154,6 +175,12 @@ class Communicator(private val context: Context) : Runnable {
     /**
      *  Viewmodel Update functions
      */
+
+
+    private fun runSequence(action: Action) {
+
+    }
+
     private fun updateHead(head: Head) {
         updateConversationHandler.post {
             viewModel.head.value = head
@@ -184,8 +211,14 @@ class Communicator(private val context: Context) : Runnable {
         }
     }
 
+    private fun updatePositionArray(positionArray: PositionArray){
+        updateConversationHandler.post {
+            viewModel.positionArray.value = positionArray
+        }
+    }
+
     private fun updateSpeak(speak: Speak) {
-        speak.string = readString(speak.length)
+        //speak.string = readString(speak.length)
         updateConversationHandler.post {
             viewModel.speak.value = speak
         }
@@ -290,7 +323,11 @@ class Communicator(private val context: Context) : Runnable {
 
     private fun readBytes(int: Int) : ByteArray{
         val bytes = ByteArray(int)
-        input.read(bytes,0,int)
+        for (byte in 0 until int){
+            bytes[byte] = input.read().toByte()
+        }
+
+        //val x = input.read(bytes,0,int)
         return bytes
     }
 

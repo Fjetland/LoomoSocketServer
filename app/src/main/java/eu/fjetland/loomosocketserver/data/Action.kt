@@ -1,5 +1,6 @@
 package eu.fjetland.loomosocketserver.data
 
+import android.util.Log
 import eu.fjetland.loomosocketserver.ENCODING
 import org.json.JSONObject
 
@@ -9,6 +10,8 @@ class Action(string: String){
          * Must correspond with MATLAB and doccumentation
          */
         const val ACTION = "ack"
+
+        const val SEQUENCE = "seq"
 
         const val ENABLE_DRIVE = "enableDrive"
         const val ENABLE_DRIVE_VALUE = "value"
@@ -20,12 +23,15 @@ class Action(string: String){
         const val VELOCITY_LINEAR = "v"
 
         const val POSITION = "pos"
+        const val POSITION_ARRAY = "posar"
+
         const val POSITION_X = "x"
         const val POSITION_Y = "y"
         const val POSITION_TH = "th"
-        const val POSITION_ADD = "add"
+        const val POSITION_VLS = "add"
 
         const val SPEAK = "spk"
+        const val SPEAK_STRING = "s"
         const val SPEAK_LENGTH = "l"
         const val SPEAK_QUE = "q"
         const val SPEAK_PITCH = "p"
@@ -42,12 +48,13 @@ class Action(string: String){
         const val HEAD_SET_SMOOTH = 0
         const val HEAD_SET_LOCK = 1
 
-        val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, SPEAK, VOLUME, HEAD, ENABLE_VISION)
+        val ACTIONLIST = listOf(ENABLE_DRIVE, VELOCITY, POSITION, POSITION_ARRAY, SPEAK, VOLUME, HEAD, ENABLE_VISION)
     }
 
     constructor(byteArray: ByteArray) : this(byteArray.toString(charset(ENCODING)))
 
-    private val jsonObject = JSONObject(string)
+    val jsonObject = JSONObject(string)
+
     var actionType : String
 
     init {
@@ -86,14 +93,54 @@ class Action(string: String){
         if (jsonObject.has(POSITION_TH)){
             obj.th = jsonObject.getDouble(POSITION_TH).toFloat()
         }
-        if (jsonObject.has(POSITION_ADD)){
-            obj.add = jsonObject.getBoolean(POSITION_ADD)
+        if (jsonObject.has(POSITION_VLS)){
+            obj.vls = jsonObject.getBoolean(POSITION_VLS)
+        }
+        return obj
+    }
+
+    fun json2positionArray()  : PositionArray{
+        val xJson = jsonObject.getJSONArray(POSITION_X)
+        val yJson = jsonObject.getJSONArray(POSITION_Y)
+        val numPoints = xJson.length()
+
+        val x = FloatArray(numPoints)
+        val y = FloatArray(numPoints)
+
+        var obj: PositionArray?
+
+        if (jsonObject.has(POSITION_TH)) {
+            val thJson = jsonObject.getJSONArray(POSITION_TH)
+            val th = FloatArray(numPoints)
+            for (element in 0 until numPoints) {
+                x[element] = xJson.getDouble(element).toFloat()
+                y[element] = yJson.getDouble(element).toFloat()
+                th[element] = thJson.getDouble(element).toFloat()
+            }
+            obj = PositionArray(
+                x = x,
+                y = y,
+                th = th
+            )
+        } else {
+            for (element in 0 until numPoints) {
+                x[element] = xJson.getDouble(element).toFloat()
+                y[element] = yJson.getDouble(element).toFloat()
+            }
+            obj = PositionArray(
+                x = x,
+                y = y
+            )
+        }
+        if (jsonObject.has(POSITION_VLS)){
+            obj.vls = jsonObject.getBoolean(POSITION_VLS)
         }
         return obj
     }
 
     fun json2speak() : Speak {
         val obj = Speak(jsonObject.getInt(SPEAK_LENGTH))
+        obj.string = jsonObject.getString(SPEAK_STRING)
         if (jsonObject.has(SPEAK_PITCH)) obj.pitch = jsonObject.getDouble(SPEAK_PITCH).toFloat()
         if (jsonObject.has(SPEAK_QUE)) obj.que = jsonObject.getInt(SPEAK_QUE)
         return obj
@@ -153,8 +200,16 @@ data class Position(
     val x : Float, // X direction absolute movement
     val y : Float, // Y direction absolute movement
     var th: Float? = null,
-    var add: Boolean = false,
+    var vls: Boolean = false,
     val act: String = Action.POSITION
+)
+
+data class PositionArray(
+    val x: FloatArray,
+    val y: FloatArray,
+    var th: FloatArray? = null,
+    var vls: Boolean = false,
+    val act: String = Action.POSITION_ARRAY
 )
 
 data class Speak(

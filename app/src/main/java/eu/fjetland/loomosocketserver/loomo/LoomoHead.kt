@@ -14,6 +14,7 @@ class LoomoHead (context: Context){
 
     companion object {
 
+        val LIGHT_OFF = 0
         val LIGHT_BLUE = 1
         val LIGHT_BLUE_SPINN = 2
         val LIGHT_BLUE_WHITE_ROTATE = 3
@@ -31,11 +32,12 @@ class LoomoHead (context: Context){
 
         val LIGHT_BLUE_PULSE = 12
         val LIGHT_WHITE_ROTATE = 13
-
     }
 
     private val TAG = "LoomoHead"
     private var mHead = Head.getInstance()
+
+    private var myEarLight = LIGHT_OFF
 
     init {
         mHead.bindService(context.applicationContext, object : ServiceBinder.BindStateListener {
@@ -48,11 +50,13 @@ class LoomoHead (context: Context){
     }
 
     fun setHead(head: myHead) {
+        Log.i(TAG,"$head")
         if (head.mode == Action.HEAD_SET_SMOOTH) {
             mHead.mode = Head.MODE_SMOOTH_TACKING
             mHead.setWorldYaw(head.yaw)
             mHead.setWorldPitch(head.pitch)
         } else {
+
             mHead.mode = Head.MODE_ORIENTATION_LOCK
             mHead.setYawAngularVelocity(head.yaw)
             mHead.setPitchAngularVelocity(head.pitch)
@@ -64,6 +68,15 @@ class LoomoHead (context: Context){
 
     fun setHeadLight(int: Int) {
         mHead.setHeadLightMode(int)
+        myEarLight = int
+    }
+
+    fun setEnableDriveLight(enableDrive : Boolean){
+        if (enableDrive){
+            setHeadLight(LIGHT_PURPLE_WHITE_ROTATE)
+        } else {
+            setHeadLight(LIGHT_BLUE)
+        }
     }
 
     fun setConnectedLight(boolean: Boolean){
@@ -91,6 +104,15 @@ class LoomoHead (context: Context){
             setHeadLight(LIGHT_BLUE_SPINN)
             delay(1200L)
             setHeadLight(LIGHT_ORANGE_SLOW)
+        }
+    }
+
+    fun headLightNotification(light : Int){
+        val oldLight = myEarLight
+        GlobalScope.launch {
+            setHeadLight(light)
+            delay(1200L)
+            setHeadLight(oldLight)
         }
     }
 

@@ -142,6 +142,7 @@ class MainActivity : AppCompatActivity(){
                 Log.i(TAG, "Action: $it")
                 loomoBase.setEnableDrive(it)
                 updateDriveIcon(it.drive)
+                loomoHead.setEnableDriveLight(it.drive)
 
             }
         })
@@ -160,10 +161,23 @@ class MainActivity : AppCompatActivity(){
             }
         })
 
+        viewModel.positionArray.observe(this, Observer {
+            if (it != null){
+                Log.i(TAG, "Action: $it")
+                loomoBase.setPositionArray(it)
+            }
+        })
+
         viewModel.head.observe(this, Observer {
             if (it != null){
                 Log.i(TAG, "Action: $it")
                 loomoHead.setHead(it)
+            }
+        })
+
+        viewModel.headLightNotification.observe(this, Observer {
+            if (it!= 0){
+                loomoHead.headLightNotification(it)
             }
         })
 
