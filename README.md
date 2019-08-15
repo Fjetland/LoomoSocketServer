@@ -11,20 +11,34 @@ A corresponding MATLAB client tool can be found at: (To be listed)
 ## Communication protocol
 Description of the agreed upon communication protocol between sender and receiver. The Loomo server will be a slave to the client and only respond to given commands found in the **_Action Intention_** list or **_Sensor readings_** list.
 
- Stepp | #1 | #2 | #3
- ------|----|----|----
- **Sender** | Next bytes | Intention  | Receive/Transfer*
- **Receiver** | *Listen* | *Listen* | Receive/Transfer*
- Data Type | *uint8* | *JSON string[<256]* | *bitArray**
+ Stepp | #1 | #2 | #3 | #4
+ ------|----|----|----|----
+ **Sender** | Byte | Byte | Intention  | Receive/Transfer*
+ **Receiver** | *Listen* | *Listen* | *Listen* | Receive/Transfer*
+ Data Type | *uint8* | *uint8* | *JSON string[<256]* | *bitArray**
 
  > The client is designed to be the main sender, and the Loomo robot / is designed to me the main listener. As such any contact should be initialized by the tcp client.
  > Items marked * will depend on the desired action
 
 ###### Description
 
-1. **Next byte**: An uint8 (0,255] value informing the number of bits to be sent in the message containing the JSON **_Action intention_**
+1. **Byte**: Two uint8 (0,255] values are sent and combined to a uint16 value informing of the number of bytes to be sent in the message containing the JSON **_Action intention_**
 2. **Intention**: A JSON structure with a max string length of 255 chars informing of the action  response or transfer to be done. Can also hold associated variables with the intended action.
 
+## Sequences
+Key: seq
+
+To send a collection of **_Acction intentions_** and/or **_Sensor reaquests_**,  JSON structure with rhe action Key: 'seq' can be sent, where the requests are identified with their **Key** as variable names containing a substructure of the original request.
+
+Ex:
+```JSON
+{
+  "act":"seq",
+  "enableDrive":{"value":true}
+  "vel":{"av":0.5,
+         "v":0.5}
+}
+```
 
 ### Action Commands to Loomno
 List of action intentions and accepted JSON structures.
@@ -69,6 +83,7 @@ act  | vel | Activate Velocity Commands
 v | 0-4 m/s [Float] | Desired velocity
 av | 0-4 rad/s [Float] | Desired CCW turn rate
 
+#### Move to position
 ###### Keyword: pos
 Variable | Key | Description
 ---|---|---
@@ -76,8 +91,21 @@ act  | pos | Activate Locomotion Commands
 **_Variable_** | **_Value_** | **_Description_**
 x | m [Float] | X displacement from current position
 y | m [Float] | Y displacement from current position
-th | rad [Float] | CCW Rotational displacement from current position
-~~add~~ | ~~[Boolean]~~ | ~~Add point to list~~
+th | rad [Float] | (Optional) CCW Rotational displacement from current position
+add | [Boolean] | (Optional) Add point to list, Default= False
+vls | [Boolean] | (Optional) Use VLS system
+
+#### Move trugh checkpoints
+###### Keyword: pos
+Variable | Key | Description
+---|---|---
+act  | posar | Activate Locomotion Commands
+**_Variable_** | **_Value_** | **_Description_**
+x | m [FloatArray] | X displacement from current position
+y | m [FloatArray] | Y displacement from current position
+th | rad [FloatArray] | (Optional) CCW Rotational displacement from current position
+add | [Boolean] | (Optional) Add point to list, Default= False
+vls | [Boolean] | (Optional) Use VLS system
 
 #### Speak
 Variable | Key | Description
@@ -86,7 +114,7 @@ act  | spk | Activate Locomotion Commands
 **_Variable_** | **_Value_** | **_Description_**
 l | [Int] | Length of text
 p | 0.5-2 [Float] | (Optional) Pitch 1 is Default.
-q | 0-1 [Int] |  Que Mode: 1= now (default) 2 = add
+q | 0-1 [Int] |  (Optional) Que Mode: 1= now (default) 2 = add
 
 Directly followed by a string to speak of the exact length **_l_**.
 
@@ -98,6 +126,25 @@ act  | vol | Activate Locomotion Commands
 v | 0-1 [Float] | Volume
 
 Followed by a string of the exact length **_l_**
+
+#### Get Image
+Key: img
+
+Variable | Key | Description
+---|---|---
+act  | img | Get Image from loomo
+**_Variable_** | **_Value_** | **_Description_**
+type | [String] | What image to get*
+size__*__ | [Int] |  How many bytes to be sent in image transmission
+width__*__ | [String] | Image width
+height__*__ | [String] | Image height
+
+Only **type** and **act** is sent by the requester.
+
+Items marked __*__ is the first JSON structure that is returned by the loomo socket server, immediately followed by a byte stream of size **_size_**.
+
+**Image Types:**
+'ColorSmall', 'Color', 'Depth'
 
 
 ### Sensor readings from Loomo
