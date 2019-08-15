@@ -69,10 +69,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         readLog.value = string + "\n" + readLog.value
     }
 
-    fun fullStoppMessage(){
-        readLog.value = "ERROR: Socket port dead. Restart!"
-    }
-
 
     /**
      * Clear Robot opperators after use

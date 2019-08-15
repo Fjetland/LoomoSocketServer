@@ -8,8 +8,6 @@ import com.segway.robot.algo.Pose2D
 import com.segway.robot.algo.minicontroller.CheckPoint
 import com.segway.robot.algo.minicontroller.CheckPointStateListener
 import eu.fjetland.loomosocketserver.SafetyLimits
-import com.segway.robot.algo.PoseVLS
-import com.segway.robot.algo.minicontroller.ObstacleStateChangedListener
 import com.segway.robot.sdk.locomotion.sbv.StartVLSListener
 import eu.fjetland.loomosocketserver.data.*
 import eu.fjetland.loomosocketserver.updateConversationHandler
@@ -19,7 +17,7 @@ import eu.fjetland.loomosocketserver.viewModel
 class LoomoBase(context: Context) {
     private val TAG = "LoomoBase"
 
-    var mBase = Base.getInstance()
+    var mBase: Base = Base.getInstance()
 
     private var drive = false
     private var isDrivingOnCheckPoints = false
@@ -63,24 +61,21 @@ class LoomoBase(context: Context) {
             }
         })
 
-        mBase.setObstacleStateChangeListener(object : ObstacleStateChangedListener {
-            override fun onObstacleStateChanged(ObstacleAppearance: Int) {
-
-                if (ObstacleAppearance == 1) {
-                    Log.i(TAG,"Obstacle detected")
-                    updateConversationHandler.post {
-                        viewModel.speak.value = Speak(0,string = "You are in my way, please move")
-                        viewModel.headLightNotification.value = LoomoHead.LIGHT_RED_FIVE_PULSES
-                    }
-                } else {
-                    Log.i(TAG,"Obstacle dissapared")
-                    updateConversationHandler.post {
-                        viewModel.speak.value = Speak(0,string = "Thank you")
-                        viewModel.headLightNotification.value = LoomoHead.LIGHT_RED_FIVE_PULSES
-                    }
+        mBase.setObstacleStateChangeListener { ObstacleAppearance ->
+            if (ObstacleAppearance == 1) {
+                Log.i(TAG,"Obstacle detected")
+                updateConversationHandler.post {
+                    viewModel.speak.value = Speak(0,string = "You are in my way, please move")
+                    viewModel.headLightNotification.value = LoomoHead.LIGHT_RED_FIVE_PULSES
+                }
+            } else {
+                Log.i(TAG,"Obstacle dissapared")
+                updateConversationHandler.post {
+                    viewModel.speak.value = Speak(0,string = "Thank you")
+                    viewModel.headLightNotification.value = LoomoHead.LIGHT_RED_FIVE_PULSES
                 }
             }
-        })
+        }
 
     }
 
@@ -167,10 +162,11 @@ class LoomoBase(context: Context) {
             if (!position.vls) {
                 isDrivingOnCheckPoints = true
 
-
-                mBase.cleanOriginalPoint()
-                val pose2D = mBase.getOdometryPose(-1)
-                mBase.setOriginalPoint(pose2D)
+                if (!position.add) {
+                    mBase.cleanOriginalPoint()
+                    val pose2D = mBase.getOdometryPose(-1)
+                    mBase.setOriginalPoint(pose2D)
+                }
 
                 if (position.th == null) {
                     mBase.addCheckPoint(position.x, position.y)
@@ -186,10 +182,11 @@ class LoomoBase(context: Context) {
                     override fun onOpened() {
                         // set navigation data source
                         mBase.setNavigationDataSource(Base.NAVIGATION_SOURCE_TYPE_VLS)
-                        mBase.cleanOriginalPoint()
-                        val poseVLS = mBase.getVLSPose(-1)
-                        mBase.setOriginalPoint(poseVLS as Pose2D)
-
+                        if (!position.add) {
+                            mBase.cleanOriginalPoint()
+                            val poseVLS = mBase.getVLSPose(-1)
+                            mBase.setOriginalPoint(poseVLS as Pose2D)
+                        }
                         if (position.th == null) {
                             mBase.addCheckPoint(position.x, position.y)
                         } else {

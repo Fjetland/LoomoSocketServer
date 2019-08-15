@@ -2,7 +2,6 @@ package eu.fjetland.loomosocketserver.connection
 
 import android.content.Context
 import android.net.wifi.WifiManager
-import androidx.core.content.ContextCompat.getSystemService
 import eu.fjetland.loomosocketserver.R
 import eu.fjetland.loomosocketserver.SOCKET_PORT
 
@@ -15,7 +14,6 @@ class IpHelper {
             if (!wifiManager.isWifiEnabled) {
                 isWifiOn = false
                 return R.string.no_wifi.toString()
-                //wifiManager.isWifiEnabled = true
             }
             isWifiOn = true
             val wifiInfo = wifiManager.connectionInfo

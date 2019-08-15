@@ -14,14 +14,8 @@ class LoomoAudio (applicationContext: Context) {
     private var context = applicationContext
 
     private var txt2speakOK = false
-    lateinit var tts : TextToSpeech
-    lateinit var mAudio : AudioManager
-
-
-    init {
-        //if (txt2speakOK)
-        //else Log.w(TAG,"Text To Speak not initialized")
-    }
+    private lateinit var tts : TextToSpeech
+    private lateinit var mAudio : AudioManager
 
     fun onCreate(){
         tts = TextToSpeech(context, TextToSpeech.OnInitListener { status ->
@@ -74,7 +68,6 @@ class LoomoAudio (applicationContext: Context) {
             } catch (e: Exception){
                 Log.e(TAG, "Error in T2T: ",e)
             }
-
         }
     }
 
