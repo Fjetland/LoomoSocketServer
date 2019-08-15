@@ -23,9 +23,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val head = MutableLiveData<Head?>()
     val velocity = MutableLiveData<Velocity?>()
     val position = MutableLiveData<Position?>()
+    val positionArray = MutableLiveData<PositionArray>()
     val speak = MutableLiveData<Speak?>()
     val volume = MutableLiveData<Volume?>()
     val endableDrive = MutableLiveData<EnableDrive?>()
+    val headLightNotification = MutableLiveData<Int>()
 
     val visionIsActive = MutableLiveData<Boolean>()
     val activeStreams = MutableLiveData<EnableVision>()
@@ -65,10 +67,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateComLogText(string: String) {
         readLog.value = string + "\n" + readLog.value
-    }
-
-    fun fullStoppMessage(){
-        readLog.value = "ERROR: Socket port dead. Restart!"
     }
 
 

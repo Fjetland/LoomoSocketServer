@@ -5,7 +5,12 @@ import org.json.JSONObject
 
 class DataResponce {
     companion object {
-        // Data returns
+        /**
+         *  Data return types
+         *
+         *  All new return structures must be registerd in list
+         *  at the end of the companion object to be actionable trugh tcp
+         */
         const val DATA_LBL = "dat"
         const val TIME_LBL = "time"
 
@@ -18,9 +23,6 @@ class DataResponce {
         const val IMAGE_SIZE = "size"
         const val IMAGE_WIDTH = "width"
         const val IMAGE_HEIGHT = "height"
-
-
-
 
         const val SURROUNDINGS = "sSur"
         const val SURROUNDINGS_IRLEFT = "irl"
@@ -55,67 +57,67 @@ class DataResponce {
 
         val DATALIST = listOf(SURROUNDINGS, WHEEL_SPEED, POSE2D,
                                 HEAD_WORLD, HEAD_JOINT, BASE_IMU, BASE_TICK, IMAGE)
-
-
-
-        fun sensSurroundings2JSONstring(data: SensSurroundings) : String{
+        /**
+         *  Data to json
+         */
+        fun sensSurroundings2JSON(data: SensSurroundings) : JSONObject{
             val json = JSONObject()
             json.put(DATA_LBL, data.label)
             json.put(SURROUNDINGS_IRLEFT, data.IR_Left)
             json.put(SURROUNDINGS_IRRIGHT, data.IR_Right)
             json.put(SURROUNDINGS_ULTRASONIC, data.UltraSonic)
-            return json.toString()
+            return json
         }
 
-        fun sensWheelSpeed2JSONstring(data : SensWheelSpeed) : String {
+        fun sensWheelSpeed2JSON(data : SensWheelSpeed) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, data.label)
             json.put(WHEEL_SPEED_L, data.SpeedLeft)
             json.put(WHEEL_SPEED_R, data.SpeedRight)
 
-            return json.toString()
+            return json
         }
 
-        fun sensHeadPoseWorld2JSONstring(data: SensHeadPoseWorld) : String {
+        fun sensHeadPoseWorld2JSON(data: SensHeadPoseWorld) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, HEAD_WORLD)
             json.put(HEAD_PITCH, data.pitch)
             json.put(HEAD_ROLL, data.roll)
             json.put(HEAD_YAW, data.yaw)
 
-            return json.toString()
+            return json
         }
 
-        fun sensHeadPoseJoint2JSONstring(data: SensHeadPoseJoint) : String {
+        fun sensHeadPoseJoint2JSON(data: SensHeadPoseJoint) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, HEAD_JOINT)
             json.put(HEAD_PITCH, data.pitch)
             json.put(HEAD_ROLL, data.roll)
             json.put(HEAD_YAW, data.yaw)
 
-            return json.toString()
+            return json
         }
 
-        fun sensBasePose2JSONstring(data : SensBaseImu) : String {
+        fun sensBasePose2JSON(data : SensBaseImu) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, BASE_IMU)
             json.put(BASE_IMU_PITCH, data.pitch)
             json.put(BASE_IMU_ROLL, data.roll)
             json.put(BASE_IMU_YAW, data.yaw)
 
-            return json.toString()
+            return json
         }
 
-        fun sensBaseTick2JSONstring(data : SensBaseTick) : String {
+        fun sensBaseTick2JSON(data : SensBaseTick) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, BASE_TICK)
             json.put(BASE_TICK_L, data.left)
             json.put(BASE_TICK_R, data.right)
 
-            return json.toString()
+            return json
         }
 
-        fun sensPose2D2JSONstring(data : SensPose2D) : String {
+        fun sensPose2D2JSON(data : SensPose2D) : JSONObject {
             val json = JSONObject()
             json.put(DATA_LBL, POSE2D)
             json.put(POSE2D_X, data.x)
@@ -124,8 +126,12 @@ class DataResponce {
             json.put(POSE2D_VL, data.linearVelocity)
             json.put(POSE2D_VA, data.angularVelocity)
 
-            return json.toString()
+            return json
         }
+
+        /**
+         * data 2 json string
+         */
 
         fun sensImage2JSONstring(data: ImageResponse) : String{
             val json = JSONObject()

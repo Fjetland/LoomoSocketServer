@@ -52,7 +52,6 @@ class LoomoRealSense(context: Context) {
         if (colorActive || colorSmallActive || depthActive) {
             GlobalScope.launch {
                 // launch a new coroutine in background and continue
-
                 if (colorActive || colorSmallActive) startColorCamera()
                 if (depthActive) startDepthCamera()
                 updateConversationHandler.post {
@@ -232,7 +231,6 @@ class LoomoRealSense(context: Context) {
         val bytes = ByteArray(width * height * 2)
 
         img.getPixels(pixels, 0, width, 0, 0, width, height)
-        val alpha = 0xFF shl 24
         for (i in 0 until height) {
             for (j in 0 until width) {
                 val grey = pixels[width * i + j]

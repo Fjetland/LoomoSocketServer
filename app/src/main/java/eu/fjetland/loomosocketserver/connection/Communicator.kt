@@ -5,12 +5,11 @@ import android.util.Log
 import eu.fjetland.loomosocketserver.*
 import eu.fjetland.loomosocketserver.data.*
 import eu.fjetland.loomosocketserver.loomo.LoomoSensor
-import kotlinx.coroutines.delay
+import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.SocketException
 import java.net.SocketTimeoutException
 
 class Communicator(private val context: Context) : Runnable {
@@ -77,24 +76,22 @@ class Communicator(private val context: Context) : Runnable {
         output = socket.getOutputStream()
         Log.d(TAG, "Main Listener is active")
         while (!thread.isInterrupted and isConnected and !shutDownSocket) {
-//            while (input.available() <1) {
-//
-//            }
             if (thread.isInterrupted) {
                 Log.i(TAG, "Thread is interrupted at MainListener")
                 isConnected = false
                 return
             }
             try {
-                val read = input.read()
-                Log.i(TAG, "Read bit value: $read")
-                when {
-                    //read == 1 -> readResponseID()
-                    read>1 -> readAction(read) // JsonString Incoming
-                    read == -1 -> isConnected = false // Connection is lost
-                    else -> {
-                        Log.i(TAG, "Unexpected initial read bit value: $read")
-                        }
+                //val read = readInitialNumber()
+                var read = input.read()
+                if (read >= 0){
+                    val r2 = input.read()
+//                        Log.i(TAG, "b1 = ${read} b2 = ${r2}")
+                    read = read shl 8 or r2
+//                        Log.i(TAG, "Bytes to read = ${read} ")
+                    if (read > 1) readAction(read)
+                } else {
+                    isConnected = false // Connection is lost
                 }
             } catch (e : SocketTimeoutException) {
             }
@@ -109,11 +106,13 @@ class Communicator(private val context: Context) : Runnable {
             val action = Action(readBytes(bytes)) // Read and phrase JSON
             if (action.actionType in Action.ACTIONLIST || action.actionType in DataResponce.DATALIST){ // Check if known action
                 when (action.actionType) { // Decide responce
+                    Action.SEQUENCE -> runSequence(action)
                     Action.HEAD -> updateHead(action.json2head())
                     Action.ENABLE_DRIVE -> updateEnableDrive(action.json2enableDrive())
                     Action.ENABLE_VISION -> updateEnableVision(action.json2EenableVision())
                     Action.VELOCITY -> updateVelocity(action.json2velocity())
                     Action.POSITION -> updatePosition(action.json2position())
+                    Action.POSITION_ARRAY -> updatePositionArray(action.json2positionArray())
                     Action.SPEAK -> updateSpeak(action.json2speak())
                     Action.VOLUME ->  updateVolume(action.json2volume())
                     DataResponce.SURROUNDINGS -> sendSurroundings()
@@ -135,6 +134,7 @@ class Communicator(private val context: Context) : Runnable {
 
     }
 
+
     private fun connect2client() : Socket?{
         //Log.i(TAG, "Awaiting connection from client")
         var socket : Socket? = null
@@ -146,7 +146,6 @@ class Communicator(private val context: Context) : Runnable {
 
             }
 
-           //isConnected =
         }
         return socket
     }
@@ -154,6 +153,107 @@ class Communicator(private val context: Context) : Runnable {
     /**
      *  Viewmodel Update functions
      */
+
+
+    private fun runSequence(action: Action) {
+
+        /**
+         * Actions
+         */
+        if (action.jsonObject.has(Action.HEAD)){
+            val obj = Action(action.jsonObject.getJSONObject(Action.HEAD))
+            updateHead(obj.json2head())
+        }
+
+        if (action.jsonObject.has(Action.ENABLE_VISION)) {
+            val obj = Action(action.jsonObject.getJSONObject(Action.ENABLE_VISION))
+            updateEnableVision(obj.json2EenableVision())
+        }
+
+        if (action.jsonObject.has(Action.ENABLE_DRIVE)){
+            val obj = Action(action.jsonObject.getJSONObject(Action.ENABLE_DRIVE))
+            updateEnableDrive(obj.json2enableDrive())
+        }//    Log.i(TAG,"Replying with ${json.length()} sensor structures")
+
+
+        when {
+            action.jsonObject.has(Action.VELOCITY) -> {
+                val obj = Action(action.jsonObject.getJSONObject(Action.VELOCITY))
+                updateVelocity(obj.json2velocity())
+            }
+            action.jsonObject.has(Action.POSITION) -> {
+                val obj = Action(action.jsonObject.getJSONObject(Action.POSITION))
+                updatePosition(obj.json2position())
+            }
+            action.jsonObject.has(Action.POSITION_ARRAY) -> {
+                val obj = Action(action.jsonObject.getJSONObject(Action.POSITION_ARRAY))
+                updatePositionArray(obj.json2positionArray())
+            }
+        }
+
+        if (action.jsonObject.has(Action.VOLUME)){
+            val obj = Action(action.jsonObject.getJSONObject(Action.VOLUME))
+            updateVolume(obj.json2volume())
+        }
+
+        if (action.jsonObject.has(Action.SPEAK)) {
+            val obj = Action(action.jsonObject.getJSONObject(Action.SPEAK))
+            updateSpeak(obj.json2speak())
+        }
+
+        /**
+         * Sensors and data return
+         */
+        val json  = JSONObject()
+
+        if (action.jsonObject.has(DataResponce.SURROUNDINGS)){
+            val data = mSensor.getSurroundings()
+            json.put(DataResponce.SURROUNDINGS,
+                DataResponce.sensSurroundings2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.WHEEL_SPEED)){
+            val data = mSensor.getWheelSpeed()
+            json.put(DataResponce.WHEEL_SPEED,
+                DataResponce.sensWheelSpeed2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.POSE2D)){
+            val data = mSensor.getSensPose2D()
+            json.put(DataResponce.POSE2D,
+                DataResponce.sensPose2D2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.HEAD_WORLD)){
+            val data = mSensor.getHeadPoseWorld()
+            json.put(DataResponce.HEAD_WORLD,
+                DataResponce.sensHeadPoseWorld2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.HEAD_JOINT)){
+            val data = mSensor.getHeadPoseJoint()
+            json.put(DataResponce.HEAD_JOINT,
+                DataResponce.sensHeadPoseJoint2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.BASE_IMU)){
+            val data = mSensor.getSensBaseImu()
+            json.put(DataResponce.BASE_IMU,
+                DataResponce.sensBasePose2JSON(data))
+        }
+
+        if (action.jsonObject.has(DataResponce.BASE_TICK)){
+            val data = mSensor.getSensBaseTick()
+            json.put(DataResponce.BASE_TICK,
+                DataResponce.sensBaseTick2JSON(data))
+        }
+
+        if (json.length()>0){
+        //    Log.i(TAG,"Replying with ${json.length()} sensor structures")
+            sendString(json.toString())
+        }
+    }
+
     private fun updateHead(head: Head) {
         updateConversationHandler.post {
             viewModel.head.value = head
@@ -184,8 +284,14 @@ class Communicator(private val context: Context) : Runnable {
         }
     }
 
+    private fun updatePositionArray(positionArray: PositionArray){
+        updateConversationHandler.post {
+            viewModel.positionArray.value = positionArray
+        }
+    }
+
     private fun updateSpeak(speak: Speak) {
-        speak.string = readString(speak.length)
+        //speak.string = readString(speak.length)
         updateConversationHandler.post {
             viewModel.speak.value = speak
         }
@@ -216,37 +322,37 @@ class Communicator(private val context: Context) : Runnable {
 
     private fun sendSurroundings() {
         val data = mSensor.getSurroundings()
-        sendString(DataResponce.sensSurroundings2JSONstring(data))
+        sendString(DataResponce.sensSurroundings2JSON(data).toString())
     }
 
     private fun sendWheelSpeed() {
         val data = mSensor.getWheelSpeed()
-        sendString(DataResponce.sensWheelSpeed2JSONstring(data))
+        sendString(DataResponce.sensWheelSpeed2JSON(data).toString())
     }
 
     private fun sendHeadPoseWorld() {
         val data = mSensor.getHeadPoseWorld()
-        sendString(DataResponce.sensHeadPoseWorld2JSONstring(data))
+        sendString(DataResponce.sensHeadPoseWorld2JSON(data).toString())
     }
 
     private fun sendHeadPoseJoint() {
         val data = mSensor.getHeadPoseJoint()
-        sendString(DataResponce.sensHeadPoseJoint2JSONstring(data))
+        sendString(DataResponce.sensHeadPoseJoint2JSON(data).toString())
     }
 
     private fun sendBaseImu() {
         val data = mSensor.getSensBaseImu()
-        sendString(DataResponce.sensBasePose2JSONstring(data))
+        sendString(DataResponce.sensBasePose2JSON(data).toString())
     }
 
     private fun sendBaseTick() {
         val data = mSensor.getSensBaseTick()
-        sendString(DataResponce.sensBaseTick2JSONstring(data))
+        sendString(DataResponce.sensBaseTick2JSON(data).toString())
     }
 
     private fun sendPose2D() {
         val data = mSensor.getSensPose2D()
-        sendString(DataResponce.sensPose2D2JSONstring(data))
+        sendString(DataResponce.sensPose2D2JSON(data).toString())
     }
 
     private fun sendImage(meta : ImageResponse) {
@@ -290,16 +396,10 @@ class Communicator(private val context: Context) : Runnable {
 
     private fun readBytes(int: Int) : ByteArray{
         val bytes = ByteArray(int)
-        input.read(bytes,0,int)
-        return bytes
-    }
-
-    private fun readString(int: Int) : String {
-        return try {
-            readBytes(int).toString(charset(ENCODING))
-        } catch (e: Exception) {
-            "Nothing"
+        for (byte in 0 until int){
+            bytes[byte] = input.read().toByte()
         }
+        return bytes
     }
 
     private fun sendBytes(byteArray: ByteArray) {
@@ -308,8 +408,13 @@ class Communicator(private val context: Context) : Runnable {
 
     private fun sendString(string: String){
         val byteArray = string.toByteArray(charset(ENCODING))
-        val length = byteArrayOf(byteArray.size.toByte())
-        sendBytes(length)
+        val length = byteArray.size
+        //Log.i(TAG,"Sending $length bytes")
+        val byteLength = byteArrayOf(
+            (length and 0x0000FF00 shr 8).toByte(),
+            (length and 0x000000FF).toByte()
+        )
+        sendBytes(byteLength)
         sendBytes(byteArray)
     }
 }
